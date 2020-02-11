@@ -1,4 +1,4 @@
-export default interface IRenderer {
+export interface IRenderer {
   getCanvas(): HTMLCanvasElement;
   getContext(): CanvasRenderingContext2D;
 }

@@ -2,7 +2,7 @@ import PersistencePointTuple from '../point-tuple';
 import AbstractControlModule from './abstract-control-module';
 import { EventType } from '../event-dispatcher';
 import { IPointData } from '../point-data-interface';
-import IRenderer from './renderer-interface';
+import { IRenderer } from './renderer-interface';
 
 /**
  * Point renderer

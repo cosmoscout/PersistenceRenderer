@@ -10,6 +10,7 @@ import Bounds from './bounds';
 import { DefaultSettings, Settings } from './settings';
 import Selection from './control/selection';
 import { IControlData } from './control-data-interface';
+import { IRenderer } from './control/renderer-interface';
 
 export default class PersistenceRenderer implements IPointData, IControlData {
   /**
@@ -39,9 +40,9 @@ export default class PersistenceRenderer implements IPointData, IControlData {
 
   /**
    * Canvas instance
-   * @see {Renderer}
+   * @see {IRenderer}
    */
-  private _renderer: Renderer | undefined;
+  private _renderer: IRenderer | undefined;
 
   /**
    * @see {IPointData}
@@ -131,8 +132,8 @@ export default class PersistenceRenderer implements IPointData, IControlData {
    * The Renderer instance created by
    * @see {createControlElements}
    */
-  public get renderer(): Renderer {
-    return <Renderer> this._renderer;
+  public get renderer(): IRenderer {
+    return <IRenderer> this._renderer;
   }
 
   /**
