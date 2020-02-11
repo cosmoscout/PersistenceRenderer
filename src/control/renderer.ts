@@ -255,7 +255,7 @@ export default class Renderer extends AbstractControlModule implements IRenderer
     this.getContext().textAlign = 'center';
     this.getContext().textBaseline = 'bottom';
 
-    for (let i = 1; i < 5; ++i) {
+    for (let i = 1; i < 5; i += 1) {
       const valX = ((this.pointData.xMax() - this.pointData.xMin()) / 5) * i;
       const valY = ((this.pointData.yMax() - this.pointData.yMin()) / 5) * i;
 

@@ -75,9 +75,9 @@ export default class Selection extends AbstractControlModule {
     });
 
     (<HTMLCanvasElement> this.canvas).addEventListener('mouseup', () => {
-      console.log((<HTMLElement>this.element).offsetWidth);
+      // console.log((<HTMLElement> this.element).offsetWidth);
 
-      if ((<HTMLElement>this.element).offsetWidth < 10) {
+      if ((<HTMLElement> this.element).offsetWidth < 10) {
         this.hideSelection();
         return;
       }
