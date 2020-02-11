@@ -75,7 +75,15 @@ export default class Selection extends AbstractControlModule {
     });
 
     (<HTMLCanvasElement> this.canvas).addEventListener('mouseup', () => {
+      console.log((<HTMLElement>this.element).offsetWidth);
+
+      if ((<HTMLElement>this.element).offsetWidth < 10) {
+        this.hideSelection();
+        return;
+      }
+
       this.getSelectionBounds();
+
       this.pointData.setActiveSelectionBounds(this.selectionBounds);
       this.events.dispatch(EventType.SelectionEnd);
     });
@@ -88,9 +96,8 @@ export default class Selection extends AbstractControlModule {
     this.selectionStart = event.clientX;
 
     Object.assign(this.getElement().style, {
-      display: 'block',
       width: '0px',
-      height: `${(<HTMLCanvasElement> this.canvas).offsetHeight}px`,
+      height: `${this.controlData.settings.canvasHeight - this.controlData.settings.padding}px`,
       top: `${(<HTMLCanvasElement> this.canvas).offsetTop}px`,
       left: `${x}px`,
     });
@@ -122,7 +129,9 @@ export default class Selection extends AbstractControlModule {
 
     this.events.dispatch(EventType.SelectionUpdating);
 
-    Object.assign(this.getElement().style, style);
+    Object.assign(this.getElement().style, style, {
+      display: 'block',
+    });
   }
 
   private hideSelection() {
@@ -132,6 +141,7 @@ export default class Selection extends AbstractControlModule {
     });
 
     this.selectionBounds = undefined;
+    this.selectionStart = 0;
 
     this.events.dispatch(EventType.SelectionHidden);
   }
