@@ -75,7 +75,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
    * @param settings {Settings}
    * @throws {Error} If dependencies are not loaded
    */
-  constructor(container: HTMLElement | string, id: string, settings: Settings) {
+  constructor(container: HTMLElement | string, id: string, settings: Settings = <Settings>{}) {
     if (typeof container === 'string') {
       const element = document.querySelector(container);
       if (element === null) {
@@ -116,7 +116,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
    * @returns {Promise<void>}
    */
   public async load(fileName: string): Promise<void> {
-    await this.loader.load(fileName).then((data: ILoaderData) => {
+    return this.loader.load(fileName).then((data: ILoaderData) => {
       this._points = data.points;
       this._pointChunks = this.chunkPoints(data.points);
       this._bounds = data.bounds;
@@ -349,8 +349,8 @@ export default class PersistenceRenderer implements IPointData, IControlData {
       return points;
     }
 
-    return points.filter((point) => (<Renderer> this._renderer).xPos(point.x1) >= this.activeSelectionBounds.min
-        && (<Renderer> this._renderer).xPos(point.x1) <= this.activeSelectionBounds.max);
+    return points.filter((point) => (<Renderer> this._renderer).xPos(point.lower.x) >= this.activeSelectionBounds.min
+        && (<Renderer> this._renderer).xPos(point.lower.x) <= this.activeSelectionBounds.max);
   }
 
   /**
