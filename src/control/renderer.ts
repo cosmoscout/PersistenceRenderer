@@ -124,7 +124,10 @@ export default class Renderer extends AbstractControlModule implements IRenderer
     this._context.clearRect(0, 0, this.controlData.settings.canvasWidth, this.controlData.settings.canvasHeight);
 
     this.drawLine();
-    this.drawAxes();
+
+    if (this.controlData.settings.enableTicks) {
+      this.drawAxes();
+    }
 
     const promises: Promise<void>[] = [];
 
@@ -162,12 +165,12 @@ export default class Renderer extends AbstractControlModule implements IRenderer
       }
 
       const p1 = {
-        x: this.xPos(point.x1),
-        y: this.yPos(point.y1),
+        x: this.xPos(point.lower.x),
+        y: this.yPos(point.lower.y),
       };
       const p2 = {
-        x: this.xPos(point.x2),
-        y: this.yPos(point.y2),
+        x: this.xPos(point.upper.x),
+        y: this.yPos(point.upper.y),
       };
 
       this._context.beginPath();
@@ -193,12 +196,12 @@ export default class Renderer extends AbstractControlModule implements IRenderer
 
     this.getContext().beginPath();
     this.getContext().moveTo(
-      this.xPos(first.x1),
-      this.yPos(first.y1),
+      this.xPos(first.lower.x),
+      this.yPos(first.lower.y),
     );
     this.getContext().lineTo(
-      this.xPos(last.x1),
-      this.yPos(last.y1),
+      this.xPos(last.lower.x),
+      this.yPos(last.lower.y),
     );
     this.getContext().stroke();
   }
@@ -222,6 +225,65 @@ export default class Renderer extends AbstractControlModule implements IRenderer
       this.yPos(0),
     );
     this.getContext().stroke();
+
+    this.getContext().fillStyle = this.controlData.settings.strokeStyle;
+
+    this.getContext().fillText(
+      this.pointData.xMin().toFixed(2),
+      this.xPos(0),
+      this.yPos(0) + this.controlData.settings.padding,
+    );
+
+    this.getContext().fillText(
+      this.pointData.xMax().toFixed(2),
+      this.xPos(this.pointData.xMax()),
+      this.yPos(0) + this.controlData.settings.padding,
+    );
+
+    this.getContext().fillText(
+      this.pointData.yMin().toFixed(2),
+      this.xPos(0) - this.controlData.settings.padding,
+      this.yPos(0),
+    );
+
+    this.getContext().fillText(
+      this.pointData.yMax().toFixed(2),
+      this.xPos(0) - this.controlData.settings.padding,
+      this.yPos(this.pointData.yMax()),
+    );
+
+    this.getContext().textAlign = 'center';
+    this.getContext().textBaseline = 'bottom';
+
+    for (let i = 1; i < 5; ++i) {
+      const valX = ((this.pointData.xMax() - this.pointData.xMin()) / 5) * i;
+      const valY = ((this.pointData.yMax() - this.pointData.yMin()) / 5) * i;
+
+
+      this.getContext().beginPath();
+      this.getContext().moveTo(this.xPos(valX), this.yPos(0));
+      this.getContext().lineTo(this.xPos(valX), this.yPos(0) + 5);
+      this.getContext().stroke();
+
+      this.getContext().beginPath();
+      this.getContext().moveTo(this.xPos(0), this.yPos(valY));
+      this.getContext().lineTo(this.xPos(0) - 5, this.yPos(valY));
+      this.getContext().stroke();
+
+      this.getContext().fillText(
+        valX.toFixed(2),
+        this.xPos(valX),
+        this.yPos(0) + this.controlData.settings.padding,
+      );
+
+      this.getContext().fillText(
+        valY.toFixed(2),
+        this.xPos(0) - this.controlData.settings.padding,
+        this.yPos(valY),
+      );
+    }
+
+    this.getContext().fill();
   }
 
   /**
