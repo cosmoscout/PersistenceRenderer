@@ -20,14 +20,15 @@
   "license": "MIT",
   "dependencies": {
     "@types/nouislider": "^9.0.6",
+    "core-js": "^3.6.4",
     "nouislider": "^14.1.1",
+    "regenerator-runtime": "^0.13.3",
     "vtk.js": "^13.7.1"
   },
   "devDependencies": {
     "@babel/core": "7.8.3",
     "@babel/plugin-proposal-class-properties": "7.8.3",
     "@babel/plugin-proposal-object-rest-spread": "7.8.3",
-    "@babel/plugin-transform-async-to-generator": "^7.8.3",
     "@babel/preset-env": "7.8.3",
     "@babel/preset-typescript": "7.8.3",
     "@typescript-eslint/eslint-plugin": "^2.19.2",
