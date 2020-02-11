@@ -39,7 +39,7 @@ export default class PersistenceSlider extends AbstractControlModule {
             throw new Error('noUiSlider is required');
         }
 
-        this.createElement()
+        this.createElement();
     }
 
     /**
@@ -67,7 +67,7 @@ export default class PersistenceSlider extends AbstractControlModule {
             this.events.dispatch(EventType.SliderDestroyed);
         }
 
-        this.noUiSlider = noUiSlider.create(<HTMLElement>element, {
+        noUiSlider.create(<HTMLElement>element, {
             start: [data.persistenceBounds.min, data.persistenceBounds.max],
             snap: false,
             animate: false,
@@ -75,6 +75,9 @@ export default class PersistenceSlider extends AbstractControlModule {
             range: <{}>data.persistenceBounds,
         });
         this.events.dispatch(EventType.SliderCreated);
+
+        //@ts-ignore
+        this.noUiSlider = element.noUiSlider;
 
         this.addListener();
     }
