@@ -11,17 +11,20 @@
  * @type {Settings}
  */
 export interface Settings {
-  padding: number;
+  readonly padding: number;
 
-  canvasWidth: number;
-  canvasHeight: number;
-  strokeStyle: string;
+  readonly canvasWidth: number;
+  readonly canvasHeight: number;
+  readonly strokeStyle: string;
 
-  chunks: number;
-  waitTime: number;
+  readonly enableTicks: boolean;
 
-  enableSelection: boolean;
-  enableSlider: boolean;
+
+  readonly chunks: number;
+  readonly waitTime: number;
+
+  readonly enableSelection: boolean;
+  readonly enableSlider: boolean;
 }
 
 export const DefaultSettings: Settings = {
@@ -30,6 +33,8 @@ export const DefaultSettings: Settings = {
   canvasWidth: 500,
   canvasHeight: 500,
   strokeStyle: '#000',
+
+  enableTicks: true,
 
   chunks: 100,
   waitTime: 150,
