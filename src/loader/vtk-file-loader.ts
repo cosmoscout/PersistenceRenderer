@@ -1,7 +1,7 @@
 // @ts-ignore
 import * as vtk from 'vtk.js';
-import PersistencePointTuple, {Coordinate, CriticalType, Point3D} from '../point-tuple';
-import {ILoader, ILoaderData} from './loader-interface';
+import PersistencePointTuple, { Coordinate, CriticalType, Point3D } from '../point-tuple';
+import { ILoader, ILoaderData } from './loader-interface';
 
 export default class VtkFileLoader implements ILoader {
   /**
@@ -13,7 +13,9 @@ export default class VtkFileLoader implements ILoader {
   private readonly reader: vtk.IO.Core.vtkHttpDataSetReader;
 
   private rawPointData: Float32Array | undefined;
+
   private criticalTypeData: Float32Array | undefined;
+
   private coordinateData: Float32Array | undefined;
 
   /**
@@ -53,7 +55,7 @@ export default class VtkFileLoader implements ILoader {
 
           this.rawPointData = rawData;
           this.criticalTypeData = pointData.getArray(1).getData();
-          this.coordinateData =  pointData.getArray(2).getData();
+          this.coordinateData = pointData.getArray(2).getData();
 
           const points = [];
 
@@ -75,18 +77,18 @@ export default class VtkFileLoader implements ILoader {
             }, { min: 0, max: 0 }),
           });
         }).catch((r:string) => {
-          reject(`Loader Error: ${r}.`);
+          reject(new Error(`Loader Error: ${r}.`));
         });
       }).catch(() => {
-        reject(`Could not access data at ${fileName}.`);
+        reject(new Error(`Could not access data at ${fileName}.`));
       });
     });
   }
 
   private createPointTuple(index: number, criticalIndex: number): PersistencePointTuple {
-    if (typeof this.rawPointData === 'undefined' ||
-        typeof this.coordinateData === 'undefined' ||
-        typeof this.criticalTypeData === 'undefined') {
+    if (typeof this.rawPointData === 'undefined'
+        || typeof this.coordinateData === 'undefined'
+        || typeof this.criticalTypeData === 'undefined') {
       throw new Error('Can\'t create PersistencePointTuple from undefined data.');
     }
 
@@ -104,7 +106,7 @@ export default class VtkFileLoader implements ILoader {
 
     const criticalType: CriticalType = {
       lower: this.criticalTypeData[criticalIndex],
-      upper: this.criticalTypeData[criticalIndex + 1]
+      upper: this.criticalTypeData[criticalIndex + 1],
     };
 
     const coordinates: Coordinate = {
@@ -117,14 +119,14 @@ export default class VtkFileLoader implements ILoader {
         x: this.coordinateData[index + 3],
         y: this.coordinateData[index + 4],
         z: this.coordinateData[index + 5],
-      }
+      },
     };
 
     return new PersistencePointTuple(
-        lower,
-        upper,
-        criticalType,
-        coordinates
+      lower,
+      upper,
+      criticalType,
+      coordinates,
     );
   }
 }
