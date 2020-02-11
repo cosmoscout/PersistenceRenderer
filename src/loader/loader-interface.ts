@@ -7,7 +7,6 @@ import Bounds from '../bounds';
 export interface ILoaderData {
   readonly points: PersistencePointTuple[];
   readonly bounds: number[];
-  readonly outputData: {};
   readonly persistenceBounds: Bounds;
 }
 

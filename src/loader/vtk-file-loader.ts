@@ -64,7 +64,6 @@ export default class VtkFileLoader implements ILoader {
           resolve(<ILoaderData>{
             points,
             bounds: reader.getOutputData().getBounds(),
-            outputData: reader.getOutputData(),
             persistenceBounds: points.reduce((acc, val) => {
               acc.min = (acc.min === 0 || val.persistence < acc.min) ? val.persistence : acc.min;
               acc.max = (acc.max === 0 || val.persistence > acc.max) ? val.persistence : acc.max;
