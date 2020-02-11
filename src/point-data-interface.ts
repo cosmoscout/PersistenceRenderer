@@ -44,4 +44,24 @@ export interface IPointData {
      */
     filteredPoints(): PersistencePointTuple[];
     filteredPointsChunked(): PersistencePointTuple[][];
+
+    /**
+     * Bounds x-min
+     */
+    xMin(): number;
+
+    /**
+     * Bounds x-max
+     */
+    xMax(): number;
+
+    /**
+     * Bounds y-min
+     */
+    yMin(): number;
+
+    /**
+     * Bounds y-max
+     */
+    yMax(): number;
 }

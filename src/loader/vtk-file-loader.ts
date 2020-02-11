@@ -4,7 +4,13 @@ import * as vtk from 'vtk.js';
 import {ILoader, ILoaderData} from "./loader-interface";
 
 export default class VtkFileLoader implements ILoader {
+    /**
+     * Loader instance settings.
+     * See: https://kitware.github.io/vtk-js/api/IO_Core_HttpDataSetReader.html
+     */
     private readonly settings: {};
+
+    private readonly reader: vtk.IO.Core.vtkHttpDataSetReader;
 
     /**
      * @param settings {{}} vtkHttpDataSetReader settings
@@ -15,6 +21,14 @@ export default class VtkFileLoader implements ILoader {
         }
 
         this.settings = settings;
+        this.reader = (<any>window).vtk.IO.Core.vtkHttpDataSetReader.newInstance(this.settings);
+    }
+
+    /**
+     * HttpDataSetReader instance
+     */
+    public getReader(): vtk.IO.Core.vtkHttpDataSetReader {
+        return this.reader;
     }
 
     /**
@@ -22,11 +36,9 @@ export default class VtkFileLoader implements ILoader {
      * @param fileName {string} Url
      * @returns {Promise<ILoaderData>}
      */
-    load(fileName: string): Promise<ILoaderData> {
-        const reader = (<any>window).vtk.IO.Core.vtkHttpDataSetReader.newInstance(this.settings);
-
+    public load(fileName: string): Promise<ILoaderData> {
         return new Promise((resolve, reject) => {
-            reader.setUrl(fileName).then((reader: vtk.Reader) => {
+            this.reader.setUrl(fileName).then((reader: vtk.Reader) => {
                 reader.loadData().then(() => {
                     const rawData = reader.getOutputData().getPoints().getData();
 

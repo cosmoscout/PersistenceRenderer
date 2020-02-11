@@ -2,12 +2,36 @@ import EventDispatcher from "../event-dispatcher";
 import {IControlData} from "../index";
 import {IPointData} from "../point-data-interface";
 
+/**
+ * Base class for arbitrary control elements
+ */
 export default abstract class AbstractControlModule {
-    protected readonly events: EventDispatcher;
+    /**
+     * Unique ID added to control elements
+     */
     protected readonly id: string;
+
+    /**
+     * Event dispatcher
+     * Events are dispatched on the container element
+     */
+    protected readonly events: EventDispatcher;
+
+    /**
+     * Common control methods and objects
+     */
     protected readonly controlData: IControlData;
+
+    /**
+     * Current Point data on initialization.
+     * New data gets passed to {update}
+     */
     protected pointData: IPointData;
 
+    /**
+     * Simple data constructor
+     * @param controlData {IControlData & IPointData} Instance of {PersistenceRenderer}
+     */
     protected constructor(controlData: IControlData & IPointData) {
         this.id = controlData.id;
         this.events = controlData.events;
@@ -15,7 +39,14 @@ export default abstract class AbstractControlModule {
         this.pointData = controlData;
     }
 
+    /**
+     * Returns the actual control html element
+     */
     public abstract getElement(): HTMLElement;
 
+    /**
+     * Updated Points
+     * @param data {IPointData}
+     */
     public abstract update(data: IPointData): any;
 }

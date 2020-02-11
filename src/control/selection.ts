@@ -2,6 +2,7 @@ import AbstractControlModule from "./abstract-control-module";
 import {IControlData} from "../index";
 import {IPointData} from "../point-data-interface";
 import Bounds from "../bounds";
+import {EventType} from "../event-dispatcher";
 
 export default class Selection extends AbstractControlModule {
     private element: HTMLElement | undefined;
@@ -12,32 +13,15 @@ export default class Selection extends AbstractControlModule {
     constructor(controlData: IControlData & IPointData) {
         super(controlData);
 
-        this.createElement()
-    }
-
-    public setCanvas(canvas: HTMLCanvasElement) {
-        (<HTMLCanvasElement>this.canvas) = canvas;
-
-        canvas.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-            this.initSelection(e);
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            this.updateSelection(e);
-        });
-
-        canvas.addEventListener('mouseup', (_e)=>{
-            this.getSelectionBounds();
-            this.pointData.setActiveSelectionBounds(this.selectionBounds);
-        });
+        this.createElement();
+        this.addListener();
     }
 
     public getElement(): HTMLElement {
         return <HTMLElement>this.element;
     }
 
-    update(_data: IPointData): void {
+    public update(_data: IPointData): void {
     }
 
     /**
@@ -76,7 +60,26 @@ export default class Selection extends AbstractControlModule {
         this.element = selectionRect;
     }
 
-    initSelection(event: MouseEvent) {
+    private addListener() {
+        this.canvas = <HTMLCanvasElement>this.controlData.renderer.getElement();
+
+        (<HTMLCanvasElement>this.canvas).addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            this.initSelection(e);
+        });
+
+        (<HTMLCanvasElement>this.canvas).addEventListener('mousemove', (e) => {
+            this.updateSelection(e);
+        });
+
+        (<HTMLCanvasElement>this.canvas).addEventListener('mouseup', (_e)=>{
+            this.getSelectionBounds();
+            this.pointData.setActiveSelectionBounds(this.selectionBounds);
+            this.events.dispatch(EventType.SelectionEnd);
+        });
+    }
+
+    private initSelection(event: MouseEvent) {
         const x = (event.clientX - (<HTMLCanvasElement>this.canvas).getBoundingClientRect().left) + (<HTMLCanvasElement>this.canvas).offsetLeft;
 
         this.selectionStart = event.clientX;
@@ -88,9 +91,11 @@ export default class Selection extends AbstractControlModule {
             top: `${(<HTMLCanvasElement>this.canvas).offsetTop}px`,
             left: `${x}px`,
         });
+
+        this.events.dispatch(EventType.SelectionStart);
     }
 
-    updateSelection(event: MouseEvent) {
+    private updateSelection(event: MouseEvent) {
         if (event.buttons !== 1) {
             return;
         }
@@ -111,19 +116,23 @@ export default class Selection extends AbstractControlModule {
             };
         }
 
+        this.events.dispatch(EventType.SelectionUpdating);
+
         Object.assign(this.getElement().style, style);
     }
 
-    hideSelection() {
+    private hideSelection() {
         Object.assign(this.getElement().style, {
             display: 'none',
             width: 0,
         });
 
         this.selectionBounds = undefined;
+
+        this.events.dispatch(EventType.SelectionHidden);
     }
 
-    getSelectionBounds() {
+    private getSelectionBounds() {
         if (this.getElement().style.display === 'none') {
             this.selectionBounds = undefined;
             return;

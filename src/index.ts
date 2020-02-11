@@ -14,14 +14,7 @@ export interface IControlData {
     readonly id: string;
     readonly events: EventDispatcher;
     readonly settings: Settings;
-
-    xMin(): number;
-
-    xMax(): number;
-
-    yMin(): number;
-
-    yMax(): number;
+    readonly renderer: Renderer;
 }
 
 export default class PersistenceRenderer implements IPointData, IControlData {
@@ -39,12 +32,26 @@ export default class PersistenceRenderer implements IPointData, IControlData {
     public readonly id: string;
 
     /**
+     * Event dispatcher for the current container
+     */
+    public readonly events: EventDispatcher;
+
+    /**
      * @see {DefaultSettings}
      * @type {Settings}
      * @private
      */
     public readonly settings: Settings = <Settings>{};
 
+    /**
+     * Canvas instance
+     * @see {Renderer}
+     */
+    private _renderer: Renderer | undefined;
+
+    /**
+     * @see {IPointData}
+     */
     private _points: PersistencePointTuple[] | undefined;
     private _pointChunks: PersistencePointTuple[][] | undefined;
     private _bounds: number[] | undefined;
@@ -52,11 +59,15 @@ export default class PersistenceRenderer implements IPointData, IControlData {
     private _activePersistenceBounds: Bounds | undefined;
     private _activeSelectionBounds: Bounds | undefined;
 
+    /**
+     * Instantiated control elements
+     */
     private controlElements: AbstractControlModule[];
 
+    /**
+     * Data loader instance
+     */
     private loader: ILoader;
-    public readonly events: EventDispatcher;
-
 
     /**
      * @param container {string|HTMLElement} Query selector string or HTMLElement to place everything into
@@ -90,96 +101,12 @@ export default class PersistenceRenderer implements IPointData, IControlData {
         this.createControlElements();
     }
 
+    /**
+     * Set a different loader instance
+     * @param loader {ILoader}
+     */
     public setLoader(loader: ILoader) {
         this.loader = loader;
-    }
-
-    private createControlElements(): void {
-        const renderer = new Renderer(this);
-        this.container.appendChild(renderer.getElement());
-        this.controlElements.push(renderer);
-
-        if (this.settings.enableSelection) {
-            const selection = new Selection(this);
-            selection.setCanvas(<HTMLCanvasElement>renderer.getElement());
-            this.container.appendChild(selection.getElement());
-            this.controlElements.push(selection);
-        }
-
-        if (this.settings.enableSlider) {
-            const slider = new PersistenceSlider(this);
-            this.container.appendChild(slider.getElement());
-            this.controlElements.push(slider);
-        }
-    }
-
-    public get points(): PersistencePointTuple[] {
-        if (typeof this._points === 'undefined') {
-            return [];
-        }
-
-        return this._points;
-    }
-
-    public get pointChunks(): PersistencePointTuple[][] {
-        if (typeof this._pointChunks === 'undefined') {
-            return [];
-        }
-
-        return this._pointChunks;
-    }
-
-    public get bounds(): number[] {
-        if (typeof this._bounds === 'undefined') {
-            return [
-                // X
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
-
-                // Y
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
-
-                // Z
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
-            ];
-        }
-
-        return this._bounds;
-    }
-
-    public get persistenceBounds(): Bounds {
-        if (typeof this._persistenceBounds === 'undefined') {
-            return new Bounds(
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
-            );
-        }
-
-        return this._persistenceBounds;
-    }
-
-    public get activePersistenceBounds(): Bounds {
-        if (typeof this._activePersistenceBounds === 'undefined') {
-            return new Bounds(
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
-            );
-        }
-
-        return this._activePersistenceBounds;
-    }
-
-    public get activeSelectionBounds(): Bounds {
-        if (typeof this._activeSelectionBounds === 'undefined') {
-            return new Bounds(
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
-            );
-        }
-
-        return this._activeSelectionBounds;
     }
 
     /**
@@ -201,10 +128,137 @@ export default class PersistenceRenderer implements IPointData, IControlData {
         });
     }
 
-    public render(): void {
+    /**
+     * The Renderer instance created by
+     * @see {createControlElements}
+     */
+    public get renderer(): Renderer {
+        return <Renderer>this._renderer;
+    }
+
+    /**
+     * Calls update on each instantiated control element
+     */
+    public update(): void {
         this.controlElements.forEach(element => {
             element.update(this);
         });
+    }
+
+    /**
+     * Get the raw Point Tuple array
+     */
+    public get points(): PersistencePointTuple[] {
+        if (typeof this._points === 'undefined') {
+            return [];
+        }
+
+        return this._points;
+    }
+
+    /**
+     * Chunked version of
+     * @see {points}
+     */
+    public get pointChunks(): PersistencePointTuple[][] {
+        if (typeof this._pointChunks === 'undefined') {
+            return [];
+        }
+
+        return this._pointChunks;
+    }
+
+    /**
+     * Get the x/y/z min/max bounds of all points
+     * Min/Max will equal to -inf/inf if bounds are not set
+     * @returns number[]
+     */
+    public get bounds(): number[] {
+        if (typeof this._bounds === 'undefined') {
+            return [
+                // X
+                Number.NEGATIVE_INFINITY,
+                Number.POSITIVE_INFINITY,
+
+                // Y
+                Number.NEGATIVE_INFINITY,
+                Number.POSITIVE_INFINITY,
+
+                // Z
+                Number.NEGATIVE_INFINITY,
+                Number.POSITIVE_INFINITY,
+            ];
+        }
+
+        return this._bounds;
+    }
+
+    /**
+     * Get the lowest/highest persistence bounds computed by all points
+     * Bounds will be -inf / inf if no bounds were set
+     * @returns {Bounds}
+     */
+    public get persistenceBounds(): Bounds {
+        if (typeof this._persistenceBounds === 'undefined') {
+            return new Bounds(
+                Number.NEGATIVE_INFINITY,
+                Number.POSITIVE_INFINITY,
+            );
+        }
+
+        return this._persistenceBounds;
+    }
+
+    /**
+     * Get the active/selected persistence bounds
+     * Bounds will be -inf / inf if no bounds were set
+     * @returns {Bounds}
+     */
+    public get activePersistenceBounds(): Bounds {
+        if (typeof this._activePersistenceBounds === 'undefined') {
+            return new Bounds(
+                Number.NEGATIVE_INFINITY,
+                Number.POSITIVE_INFINITY,
+            );
+        }
+
+        return this._activePersistenceBounds;
+    }
+
+    /**
+     * Set the active/selected persistence bounds
+     * Calls update after setting
+     * @param bounds {Bounds}
+     */
+    public setActivePersistenceBounds(bounds: Bounds): void {
+        this._activePersistenceBounds = bounds;
+        this.update();
+    }
+
+    /**
+     * Get the active selection Bounds
+     * Bounds will be -inf / inf if no bounds were set
+     * @returns {Bounds}
+     */
+    public get activeSelectionBounds(): Bounds {
+        if (typeof this._activeSelectionBounds === 'undefined') {
+            return new Bounds(
+                Number.NEGATIVE_INFINITY,
+                Number.POSITIVE_INFINITY,
+            );
+        }
+
+        return this._activeSelectionBounds;
+    }
+
+    /**
+     * Set the active selection bounds
+     * Calls update after setting
+     * @param bounds {Bounds}
+     */
+    public setActiveSelectionBounds(bounds: Bounds): void {
+        this._activeSelectionBounds = bounds;
+        this.update();
     }
 
     /**
@@ -239,7 +293,6 @@ export default class PersistenceRenderer implements IPointData, IControlData {
         return this.bounds[3];
     }
 
-
     /**
      * Filters points by persistence and selection
      * @return {PersistencePointTuple[]}
@@ -252,8 +305,34 @@ export default class PersistenceRenderer implements IPointData, IControlData {
         return this.filterPersistence(this.filterSelection(this.points));
     }
 
+    /**
+     * Returns the chunked version of
+     * @see {filteredPoints}
+     */
     public filteredPointsChunked(): PersistencePointTuple[][] {
         return this.chunkPoints(this.filteredPoints());
+    }
+
+    /**
+     * Creates all enabled control elements
+     */
+    private createControlElements(): void {
+        const renderer = new Renderer(this);
+        this.container.appendChild(renderer.getElement());
+        this.controlElements.push(renderer);
+        this._renderer = renderer;
+
+        if (this.settings.enableSelection) {
+            const selection = new Selection(this);
+            this.container.appendChild(selection.getElement());
+            this.controlElements.push(selection);
+        }
+
+        if (this.settings.enableSlider) {
+            const slider = new PersistenceSlider(this);
+            this.container.appendChild(slider.getElement());
+            this.controlElements.push(slider);
+        }
     }
 
     /**
@@ -262,11 +341,11 @@ export default class PersistenceRenderer implements IPointData, IControlData {
      * @return {PersistencePointTuple[]}
      */
     private filterSelection(points: PersistencePointTuple[]) {
-        const xPos = (x:number) => {
-            return (x - this.xMin()) / (this.xMax() - this.xMin()) * (this.settings.canvasWidth - this.settings.padding - this.settings.padding) + this.settings.padding;
-        };
+        if (typeof this._renderer === 'undefined') {
+            return points;
+        }
 
-        return points.filter(point => xPos(point.x1) >= this.activeSelectionBounds.min && xPos(point.x1) <= this.activeSelectionBounds.max);
+        return points.filter(point => (<Renderer>this._renderer).xPos(point.x1) >= this.activeSelectionBounds.min && (<Renderer>this._renderer).xPos(point.x1) <= this.activeSelectionBounds.max);
     }
 
     /**
@@ -276,9 +355,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
      * @private
      */
     private filterPersistence(points: PersistencePointTuple[]) {
-        return points.filter(point => {
-            return point.persistence >= Number(this.activePersistenceBounds.min) && point.persistence <= Number(this.activePersistenceBounds.max);
-        });
+        return points.filter(point => point.persistence >= Number(this.activePersistenceBounds.min) && point.persistence <= Number(this.activePersistenceBounds.max));
     }
 
     /**
@@ -298,15 +375,5 @@ export default class PersistenceRenderer implements IPointData, IControlData {
 
             return resultArray;
         }, <PersistencePointTuple[][]>[]);
-    }
-
-    public setActivePersistenceBounds(bounds: Bounds): void {
-        this._activePersistenceBounds = bounds;
-        this.render();
-    }
-
-    public setActiveSelectionBounds(bounds: Bounds): void {
-        this._activeSelectionBounds = bounds;
-        this.render();
     }
 }

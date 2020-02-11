@@ -1,3 +1,6 @@
+/**
+ * Wrapper class for min/max bounds
+ */
 export default class Bounds {
     public readonly min: number;
     public readonly max: number;

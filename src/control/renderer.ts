@@ -4,19 +4,25 @@ import {IControlData} from "../index";
 import {EventType} from "../event-dispatcher";
 import {IPointData} from "../point-data-interface";
 
+/**
+ * Point renderer
+ */
 export default class Renderer extends AbstractControlModule {
     /**
      * @type {HTMLCanvasElement}
      * @private
      */
-    private canvas: HTMLCanvasElement | undefined;
+    private element: HTMLCanvasElement | undefined;
 
     /**
      * @type {CanvasRenderingContext2D}
      * @private
      */
-    private context: CanvasRenderingContext2D | undefined;
+    private _context: CanvasRenderingContext2D | undefined;
 
+    /**
+     * @inheritDoc
+     */
     constructor(controlData: IControlData & IPointData) {
         super(controlData);
         this.createElement();
@@ -39,8 +45,17 @@ export default class Renderer extends AbstractControlModule {
         const context = <CanvasRenderingContext2D>canvas.getContext('2d');
         context.strokeStyle = this.controlData.settings.strokeStyle;
 
-        this.canvas = canvas;
-        this.context = context;
+        this.element = canvas;
+        this._context = context;
+    }
+
+    /**
+     * Canvas Rendering context created in
+     * @see {createElement}
+     * @return {CanvasRenderingContext2D}
+     */
+    public get context(): CanvasRenderingContext2D {
+        return <CanvasRenderingContext2D>this._context;
     }
 
     /**
@@ -48,18 +63,47 @@ export default class Renderer extends AbstractControlModule {
      * @see {pointChunks}
      * @return {Promise<void>}
      */
-    update(data: IPointData): Promise<void[]> {
+    public update(data: IPointData): Promise<void[]> {
         this.pointData = data;
-        (<HTMLCanvasElement>this.canvas).classList.remove('hidden');
-        return this._draw();
+        (<HTMLCanvasElement>this.element).classList.remove('hidden');
+        return this.draw();
     }
 
     /**
-     *
+     * @inheritDoc
+     */
+    public getElement(): HTMLElement {
+        return <HTMLElement>this.element;
+    }
+
+    /**
+     * Maps a point x-position from 0-1 to canvas width
+     * @param x {number} Point form 0 - 1
+     * @returns {number} Mapped point
+     */
+    public xPos(x: number) {
+        return (x - this.pointData.xMin()) / (this.pointData.xMax() - this.pointData.xMin()) * (this.rangeXMax - this.rangeXMin) + this.rangeXMin;
+    }
+
+    /**
+     * Maps a point y-position from 0-1 to canvas height
+     * @param y {number} Point form 0 - 1
+     * @returns {number} Mapped point
+     */
+    public yPos(y: number) {
+        // Y = (X-A)/(B-A) * (D-C) + C
+        // ( (X-A)/(A-B) * (C-D) ) * -1 + D  - Inverse
+        // A = Xmin B = Xmax
+        // c = Range Min D = range max
+        return (y - this.pointData.yMin()) / (this.pointData.yMax() - this.pointData.yMin()) * (this.rangeYMax - this.rangeYMin) + this.rangeYMin;
+    }
+
+    /**
+     * Draws the persistence line and point chunks
      * @return Promise<void>
      */
-    _draw() {
-        if (typeof this.context === 'undefined') {
+    private draw() {
+        if (typeof this._context === 'undefined') {
             throw new Error('Canvas Context is undefined');
         }
 
@@ -67,15 +111,15 @@ export default class Renderer extends AbstractControlModule {
 
         this.events.dispatch(EventType.PointsCleared);
 
-        this.context.clearRect(0, 0, this.controlData.settings.canvasWidth, this.controlData.settings.canvasHeight);
+        this._context.clearRect(0, 0, this.controlData.settings.canvasWidth, this.controlData.settings.canvasHeight);
 
-        this._drawLine();
+        this.drawLine();
 
         const promises: Promise<void>[] = [];
 
         chunks.forEach((pointArray, i) => {
             console.debug(`Drawing point chunk ${i + 1} / ${chunks.length}`);
-            promises.push(this._drawPoints(pointArray));
+            promises.push(this.drawPoints(pointArray));
         });
 
         const promiseAll = Promise.all(promises);
@@ -87,7 +131,10 @@ export default class Renderer extends AbstractControlModule {
         return promiseAll;
     }
 
-    _waitFor = () => new Promise(r => setTimeout(r, this.controlData.settings.waitTime));
+    /**
+     * Timeout promise used to delay chunk drawing
+     */
+    private waitFor = () => new Promise(r => setTimeout(r, this.controlData.settings.waitTime));
 
     /**
      * Asynchronously draws points on the context
@@ -95,11 +142,11 @@ export default class Renderer extends AbstractControlModule {
      * @returns {Promise<void>}
      * @private
      */
-    async _drawPoints(points: PersistencePointTuple[]): Promise<void> {
-        await this._waitFor();
+    private async drawPoints(points: PersistencePointTuple[]): Promise<void> {
+        await this.waitFor();
 
         points.forEach(point => {
-            if (typeof this.context === 'undefined') {
+            if (typeof this._context === 'undefined') {
                 throw new Error('Canvas Context is undefined');
             }
 
@@ -112,10 +159,10 @@ export default class Renderer extends AbstractControlModule {
                 y: this.yPos(point.y2)
             };
 
-            this.context.beginPath();
-            this.context.moveTo(p1.x, p1.y);
-            this.context.lineTo(p2.x, p2.y);
-            this.context.stroke();
+            this._context.beginPath();
+            this._context.moveTo(p1.x, p1.y);
+            this._context.lineTo(p2.x, p2.y);
+            this._context.stroke();
         });
     }
 
@@ -124,8 +171,8 @@ export default class Renderer extends AbstractControlModule {
      * @returns void
      * @private
      */
-    _drawLine() {
-        if (this.pointData.points.length === 0 || typeof this.context === 'undefined') {
+    private drawLine() {
+        if (this.pointData.points.length === 0 || typeof this._context === 'undefined') {
             console.error('Can\'t draw persistence line without points.');
             return;
         }
@@ -133,23 +180,23 @@ export default class Renderer extends AbstractControlModule {
         const first = this.pointData.points[0];
         let last = this.pointData.points[this.pointData.points.length - 1];
 
-        this.context.beginPath();
-        this.context.moveTo(
+        this._context.beginPath();
+        this._context.moveTo(
             this.xPos(first.x1),
             this.yPos(first.y1)
         );
-        this.context.lineTo(
+        this._context.lineTo(
             this.xPos(last.x1),
             this.yPos(last.y1)
         );
-        this.context.stroke();
+        this._context.stroke();
     }
 
     /**
      * Axis x-range start
      * @returns {number}
      */
-    get rangeXMin() {
+    private get rangeXMin() {
         return this.controlData.settings.padding;
     }
 
@@ -157,7 +204,7 @@ export default class Renderer extends AbstractControlModule {
      * Axis x-range end
      * @returns {number}
      */
-    get rangeXMax() {
+    private get rangeXMax() {
         return this.controlData.settings.canvasWidth - this.controlData.settings.padding;
     }
 
@@ -165,7 +212,7 @@ export default class Renderer extends AbstractControlModule {
      * Axis y-range start
      * @returns {number}
      */
-    get rangeYMin() {
+    private get rangeYMin() {
         return this.controlData.settings.canvasHeight - this.controlData.settings.padding;
     }
 
@@ -173,33 +220,7 @@ export default class Renderer extends AbstractControlModule {
      * Axis y-range end
      * @returns {number}
      */
-    get rangeYMax() {
+    private get rangeYMax() {
         return this.controlData.settings.padding;
-    }
-
-    /**
-     * Maps a point x-position from 0-1 to canvas width
-     * @param x {number} Point form 0 - 1
-     * @returns {number} Mapped point
-     */
-    xPos(x: number) {
-        return (x - this.controlData.xMin()) / (this.controlData.xMax() - this.controlData.xMin()) * (this.rangeXMax - this.rangeXMin) + this.rangeXMin;
-    }
-
-    /**
-     * Maps a point y-position from 0-1 to canvas height
-     * @param y {number} Point form 0 - 1
-     * @returns {number} Mapped point
-     */
-    yPos(y: number) {
-        // Y = (X-A)/(B-A) * (D-C) + C
-        // ( (X-A)/(A-B) * (C-D) ) * -1 + D  - Inverse
-        // A = Xmin B = Xmax
-        // c = Range Min D = range max
-        return (y - this.controlData.yMin()) / (this.controlData.yMax() - this.controlData.yMin()) * (this.rangeYMax - this.rangeYMin) + this.rangeYMin;
-    }
-
-    public getElement(): HTMLElement {
-        return <HTMLElement>this.canvas;
     }
 }
