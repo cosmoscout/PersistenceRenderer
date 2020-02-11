@@ -11,29 +11,29 @@
  * @type {Settings}
  */
 export interface Settings {
-    padding: number;
+  padding: number;
 
-    canvasWidth: number;
-    canvasHeight: number;
-    strokeStyle: string;
+  canvasWidth: number;
+  canvasHeight: number;
+  strokeStyle: string;
 
-    chunks: number;
-    waitTime: number;
+  chunks: number;
+  waitTime: number;
 
-    enableSelection: boolean;
-    enableSlider: boolean;
+  enableSelection: boolean;
+  enableSlider: boolean;
 }
 
 export const DefaultSettings: Settings = {
-    padding: 10,
+  padding: 10,
 
-    canvasWidth: 500,
-    canvasHeight: 500,
-    strokeStyle: '#000',
+  canvasWidth: 500,
+  canvasHeight: 500,
+  strokeStyle: '#000',
 
-    chunks: 100,
-    waitTime: 150,
+  chunks: 100,
+  waitTime: 150,
 
-    enableSelection: true,
-    enableSlider: true,
+  enableSelection: true,
+  enableSlider: true,
 };

@@ -1,379 +1,381 @@
-import PersistencePointTuple from "./point-tuple";
-import VtkFileLoader from "./loader/vtk-file-loader";
-import EventDispatcher, {EventType} from "./event-dispatcher";
-import {IPointData} from "./point-data-interface";
-import {ILoader, ILoaderData} from "./loader/loader-interface";
-import Renderer from "./control/renderer";
-import AbstractControlModule from "./control/abstract-control-module";
-import PersistenceSlider from "./control/slider";
-import Bounds from "./bounds";
-import {DefaultSettings, Settings} from "./settings";
-import Selection from "./control/selection";
-
-export interface IControlData {
-    readonly id: string;
-    readonly events: EventDispatcher;
-    readonly settings: Settings;
-    readonly renderer: Renderer;
-}
+import PersistencePointTuple from './point-tuple';
+import VtkFileLoader from './loader/vtk-file-loader';
+import EventDispatcher, { EventType } from './event-dispatcher';
+import { IPointData } from './point-data-interface';
+import { ILoader, ILoaderData } from './loader/loader-interface';
+import Renderer from './control/renderer';
+import AbstractControlModule from './control/abstract-control-module';
+import PersistenceSlider from './control/slider';
+import Bounds from './bounds';
+import { DefaultSettings, Settings } from './settings';
+import Selection from './control/selection';
+import { IControlData } from './control-data-interface';
 
 export default class PersistenceRenderer implements IPointData, IControlData {
-    /**
-     * @type {Element}
-     * @private
-     */
-    private readonly container: Element;
+  /**
+   * @type {Element}
+   * @private
+   */
+  private readonly container: Element;
 
-    /**
-     * ID added to canvas, slider and selection rect
-     * @type {string}
-     * @private
-     */
-    public readonly id: string;
+  /**
+   * ID added to canvas, slider and selection rect
+   * @type {string}
+   * @private
+   */
+  public readonly id: string;
 
-    /**
-     * Event dispatcher for the current container
-     */
-    public readonly events: EventDispatcher;
+  /**
+   * Event dispatcher for the current container
+   */
+  public readonly events: EventDispatcher;
 
-    /**
-     * @see {DefaultSettings}
-     * @type {Settings}
-     * @private
-     */
-    public readonly settings: Settings = <Settings>{};
+  /**
+   * @see {DefaultSettings}
+   * @type {Settings}
+   * @private
+   */
+  public readonly settings: Settings = <Settings>{};
 
-    /**
-     * Canvas instance
-     * @see {Renderer}
-     */
-    private _renderer: Renderer | undefined;
+  /**
+   * Canvas instance
+   * @see {Renderer}
+   */
+  private _renderer: Renderer | undefined;
 
-    /**
-     * @see {IPointData}
-     */
-    private _points: PersistencePointTuple[] | undefined;
-    private _pointChunks: PersistencePointTuple[][] | undefined;
-    private _bounds: number[] | undefined;
-    private _persistenceBounds: Bounds | undefined;
-    private _activePersistenceBounds: Bounds | undefined;
-    private _activeSelectionBounds: Bounds | undefined;
+  /**
+   * @see {IPointData}
+   */
+  private _points: PersistencePointTuple[] | undefined;
 
-    /**
-     * Instantiated control elements
-     */
-    private controlElements: AbstractControlModule[];
+  private _pointChunks: PersistencePointTuple[][] | undefined;
 
-    /**
-     * Data loader instance
-     */
-    private loader: ILoader;
+  private _bounds: number[] | undefined;
 
-    /**
-     * @param container {string|HTMLElement} Query selector string or HTMLElement to place everything into
-     * @param id {string}
-     * @param settings {Settings}
-     * @throws {Error} If dependencies are not loaded
-     */
-    constructor(container: HTMLElement | string, id: string, settings: Settings) {
-        if (typeof container === 'string') {
-            const element = document.querySelector(container);
-            if (element === null) {
-                throw new Error(`Element with query selector ${container} not found.`);
-            }
+  private _persistenceBounds: Bounds | undefined;
 
-            this.container = element;
-        } else if (container instanceof HTMLElement) {
-            this.container = container;
-        } else {
-            throw new Error('Container is neither a string nor an instance of HTMLElement.');
-        }
+  private _activePersistenceBounds: Bounds | undefined;
 
-        this.id = id;
+  private _activeSelectionBounds: Bounds | undefined;
 
-        Object.assign(this.settings, DefaultSettings, settings);
+  /**
+   * Instantiated control elements
+   */
+  private controlElements: AbstractControlModule[];
 
-        this.loader = new VtkFileLoader();
-        this.events = new EventDispatcher(this.container);
+  /**
+   * Data loader instance
+   */
+  private loader: ILoader;
 
-        this.controlElements = new Array<AbstractControlModule>();
+  /**
+   * @param container {string|HTMLElement} Query selector string or HTMLElement to place everything into
+   * @param id {string}
+   * @param settings {Settings}
+   * @throws {Error} If dependencies are not loaded
+   */
+  constructor(container: HTMLElement | string, id: string, settings: Settings) {
+    if (typeof container === 'string') {
+      const element = document.querySelector(container);
+      if (element === null) {
+        throw new Error(`Element with query selector ${container} not found.`);
+      }
 
-        this.createControlElements();
+      this.container = element;
+    } else if (container instanceof HTMLElement) {
+      this.container = container;
+    } else {
+      throw new Error('Container is neither a string nor an instance of HTMLElement.');
     }
 
-    /**
-     * Set a different loader instance
-     * @param loader {ILoader}
-     */
-    public setLoader(loader: ILoader) {
-        this.loader = loader;
+    this.id = id;
+
+    Object.assign(this.settings, DefaultSettings, settings);
+
+    this.loader = new VtkFileLoader();
+    this.events = new EventDispatcher(this.container);
+
+    this.controlElements = new Array<AbstractControlModule>();
+
+    this.createControlElements();
+  }
+
+  /**
+   * Set a different loader instance
+   * @param loader {ILoader}
+   */
+  public setLoader(loader: ILoader) {
+    this.loader = loader;
+  }
+
+  /**
+   * Loads the provided vtk file
+   * Chunks points
+   * @param fileName {string} Url
+   * @returns {Promise<void>}
+   */
+  public async load(fileName: string): Promise<void> {
+    await this.loader.load(fileName).then((data: ILoaderData) => {
+      this._points = data.points;
+      this._pointChunks = this.chunkPoints(data.points);
+      this._bounds = data.bounds;
+      this._persistenceBounds = data.persistenceBounds;
+      this._activePersistenceBounds = undefined;
+      this._activeSelectionBounds = undefined;
+
+      this.events.dispatch(EventType.DataLoaded);
+    });
+  }
+
+  /**
+   * The Renderer instance created by
+   * @see {createControlElements}
+   */
+  public get renderer(): Renderer {
+    return <Renderer> this._renderer;
+  }
+
+  /**
+   * Calls update on each instantiated control element
+   */
+  public update(): void {
+    this.controlElements.forEach((element) => {
+      element.update(this);
+    });
+  }
+
+  /**
+   * Get the raw Point Tuple array
+   */
+  public get points(): PersistencePointTuple[] {
+    if (typeof this._points === 'undefined') {
+      return [];
     }
 
-    /**
-     * Loads the provided vtk file
-     * Chunks points
-     * @param fileName {string} Url
-     * @returns {Promise<void>}
-     */
-    public async load(fileName: string): Promise<void> {
-        await this.loader.load(fileName).then((data: ILoaderData) => {
-            this._points = data.points;
-            this._pointChunks = this.chunkPoints(data.points);
-            this._bounds = data.bounds;
-            this._persistenceBounds = data.persistenceBounds;
-            this._activePersistenceBounds = undefined;
-            this._activeSelectionBounds = undefined;
+    return this._points;
+  }
 
-            this.events.dispatch(EventType.DataLoaded);
-        });
+  /**
+   * Chunked version of
+   * @see {points}
+   */
+  public get pointChunks(): PersistencePointTuple[][] {
+    if (typeof this._pointChunks === 'undefined') {
+      return [];
     }
 
-    /**
-     * The Renderer instance created by
-     * @see {createControlElements}
-     */
-    public get renderer(): Renderer {
-        return <Renderer>this._renderer;
+    return this._pointChunks;
+  }
+
+  /**
+   * Get the x/y/z min/max bounds of all points
+   * Min/Max will equal to -inf/inf if bounds are not set
+   * @returns number[]
+   */
+  public get bounds(): number[] {
+    if (typeof this._bounds === 'undefined') {
+      return [
+        // X
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+
+        // Y
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+
+        // Z
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+      ];
     }
 
-    /**
-     * Calls update on each instantiated control element
-     */
-    public update(): void {
-        this.controlElements.forEach(element => {
-            element.update(this);
-        });
+    return this._bounds;
+  }
+
+  /**
+   * Get the lowest/highest persistence bounds computed by all points
+   * Bounds will be -inf / inf if no bounds were set
+   * @returns {Bounds}
+   */
+  public get persistenceBounds(): Bounds {
+    if (typeof this._persistenceBounds === 'undefined') {
+      return new Bounds(
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+      );
     }
 
-    /**
-     * Get the raw Point Tuple array
-     */
-    public get points(): PersistencePointTuple[] {
-        if (typeof this._points === 'undefined') {
-            return [];
-        }
+    return this._persistenceBounds;
+  }
 
-        return this._points;
+  /**
+   * Get the active/selected persistence bounds
+   * Bounds will be -inf / inf if no bounds were set
+   * @returns {Bounds}
+   */
+  public get activePersistenceBounds(): Bounds {
+    if (typeof this._activePersistenceBounds === 'undefined') {
+      return new Bounds(
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+      );
     }
 
-    /**
-     * Chunked version of
-     * @see {points}
-     */
-    public get pointChunks(): PersistencePointTuple[][] {
-        if (typeof this._pointChunks === 'undefined') {
-            return [];
-        }
+    return this._activePersistenceBounds;
+  }
 
-        return this._pointChunks;
+  /**
+   * Set the active/selected persistence bounds
+   * Calls update after setting
+   * @param bounds {Bounds}
+   */
+  public setActivePersistenceBounds(bounds: Bounds): void {
+    this._activePersistenceBounds = bounds;
+    this.update();
+  }
+
+  /**
+   * Get the active selection Bounds
+   * Bounds will be -inf / inf if no bounds were set
+   * @returns {Bounds}
+   */
+  public get activeSelectionBounds(): Bounds {
+    if (typeof this._activeSelectionBounds === 'undefined') {
+      return new Bounds(
+        Number.NEGATIVE_INFINITY,
+        Number.POSITIVE_INFINITY,
+      );
     }
 
-    /**
-     * Get the x/y/z min/max bounds of all points
-     * Min/Max will equal to -inf/inf if bounds are not set
-     * @returns number[]
-     */
-    public get bounds(): number[] {
-        if (typeof this._bounds === 'undefined') {
-            return [
-                // X
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
+    return this._activeSelectionBounds;
+  }
 
-                // Y
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
+  /**
+   * Set the active selection bounds
+   * Calls update after setting
+   * @param bounds {Bounds}
+   */
+  public setActiveSelectionBounds(bounds: Bounds): void {
+    this._activeSelectionBounds = bounds;
+    this.update();
+  }
 
-                // Z
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
-            ];
-        }
+  /**
+   * Bounds x-min
+   * @returns {number}
+   */
+  public xMin() {
+    return this.bounds[0];
+  }
 
-        return this._bounds;
+  /**
+   * Bounds x-max
+   * @returns {number}
+   */
+  public xMax() {
+    return this.bounds[1];
+  }
+
+  /**
+   * Bounds y-min
+   * @returns {number}
+   */
+  public yMin() {
+    return this.bounds[2];
+  }
+
+  /**
+   * Bounds y-max
+   * @returns {number}
+   */
+  public yMax() {
+    return this.bounds[3];
+  }
+
+  /**
+   * Filters points by persistence and selection
+   * @return {PersistencePointTuple[]}
+   */
+  public filteredPoints(): PersistencePointTuple[] {
+    if (typeof this.points === 'undefined') {
+      return [];
     }
 
-    /**
-     * Get the lowest/highest persistence bounds computed by all points
-     * Bounds will be -inf / inf if no bounds were set
-     * @returns {Bounds}
-     */
-    public get persistenceBounds(): Bounds {
-        if (typeof this._persistenceBounds === 'undefined') {
-            return new Bounds(
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
-            );
-        }
+    return this.filterPersistence(this.filterSelection(this.points));
+  }
 
-        return this._persistenceBounds;
+  /**
+   * Returns the chunked version of
+   * @see {filteredPoints}
+   */
+  public filteredPointsChunked(): PersistencePointTuple[][] {
+    return this.chunkPoints(this.filteredPoints());
+  }
+
+  /**
+   * Creates all enabled control elements
+   */
+  private createControlElements(): void {
+    const renderer = new Renderer(this);
+    this.container.appendChild(renderer.getElement());
+    this.controlElements.push(renderer);
+    this._renderer = renderer;
+
+    if (this.settings.enableSelection) {
+      const selection = new Selection(this);
+      this.container.appendChild(selection.getElement());
+      this.controlElements.push(selection);
     }
 
-    /**
-     * Get the active/selected persistence bounds
-     * Bounds will be -inf / inf if no bounds were set
-     * @returns {Bounds}
-     */
-    public get activePersistenceBounds(): Bounds {
-        if (typeof this._activePersistenceBounds === 'undefined') {
-            return new Bounds(
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
-            );
-        }
+    if (this.settings.enableSlider) {
+      const slider = new PersistenceSlider(this);
+      this.container.appendChild(slider.getElement());
+      this.controlElements.push(slider);
+    }
+  }
 
-        return this._activePersistenceBounds;
+  /**
+   * Returns filtered points in selection rect area
+   * @param points {PersistencePointTuple[]}
+   * @return {PersistencePointTuple[]}
+   */
+  private filterSelection(points: PersistencePointTuple[]) {
+    if (typeof this._renderer === 'undefined') {
+      return points;
     }
 
-    /**
-     * Set the active/selected persistence bounds
-     * Calls update after setting
-     * @param bounds {Bounds}
-     */
-    public setActivePersistenceBounds(bounds: Bounds): void {
-        this._activePersistenceBounds = bounds;
-        this.update();
-    }
+    return points.filter((point) => (<Renderer> this._renderer).xPos(point.x1) >= this.activeSelectionBounds.min
+        && (<Renderer> this._renderer).xPos(point.x1) <= this.activeSelectionBounds.max);
+  }
 
-    /**
-     * Get the active selection Bounds
-     * Bounds will be -inf / inf if no bounds were set
-     * @returns {Bounds}
-     */
-    public get activeSelectionBounds(): Bounds {
-        if (typeof this._activeSelectionBounds === 'undefined') {
-            return new Bounds(
-                Number.NEGATIVE_INFINITY,
-                Number.POSITIVE_INFINITY,
-            );
-        }
+  /**
+   * Returns filtered points with persistence >= slider values <=
+   * @param points
+   * @return {PersistencePointTuple[]}
+   * @private
+   */
+  private filterPersistence(points: PersistencePointTuple[]) {
+    return points.filter((point) => point.persistence >= Number(this.activePersistenceBounds.min)
+        && point.persistence <= Number(this.activePersistenceBounds.max));
+  }
 
-        return this._activeSelectionBounds;
-    }
+  /**
+   * Chunks vtk points into buckets of size _chunks
+   * @returns {PersistencePointTuple[][]}
+   * @private
+   */
+  private chunkPoints(points: PersistencePointTuple[]) {
+    return points.reduce((resultArray, item, index) => {
+      const chunkIndex = Math.floor(index / this.settings.chunks);
 
-    /**
-     * Set the active selection bounds
-     * Calls update after setting
-     * @param bounds {Bounds}
-     */
-    public setActiveSelectionBounds(bounds: Bounds): void {
-        this._activeSelectionBounds = bounds;
-        this.update();
-    }
+      if (!resultArray[chunkIndex]) {
+        // eslint-disable-next-line no-param-reassign
+        resultArray[chunkIndex] = []; // start a new chunk
+      }
 
-    /**
-     * Bounds x-min
-     * @returns {number}
-     */
-    public xMin() {
-        return this.bounds[0];
-    }
+      resultArray[chunkIndex].push(item);
 
-    /**
-     * Bounds x-max
-     * @returns {number}
-     */
-    public xMax() {
-        return this.bounds[1];
-    }
-
-    /**
-     * Bounds y-min
-     * @returns {number}
-     */
-    public yMin() {
-        return this.bounds[2];
-    }
-
-    /**
-     * Bounds y-max
-     * @returns {number}
-     */
-    public yMax() {
-        return this.bounds[3];
-    }
-
-    /**
-     * Filters points by persistence and selection
-     * @return {PersistencePointTuple[]}
-     */
-    public filteredPoints(): PersistencePointTuple[] {
-        if (typeof this.points === 'undefined') {
-            return [];
-        }
-
-        return this.filterPersistence(this.filterSelection(this.points));
-    }
-
-    /**
-     * Returns the chunked version of
-     * @see {filteredPoints}
-     */
-    public filteredPointsChunked(): PersistencePointTuple[][] {
-        return this.chunkPoints(this.filteredPoints());
-    }
-
-    /**
-     * Creates all enabled control elements
-     */
-    private createControlElements(): void {
-        const renderer = new Renderer(this);
-        this.container.appendChild(renderer.getElement());
-        this.controlElements.push(renderer);
-        this._renderer = renderer;
-
-        if (this.settings.enableSelection) {
-            const selection = new Selection(this);
-            this.container.appendChild(selection.getElement());
-            this.controlElements.push(selection);
-        }
-
-        if (this.settings.enableSlider) {
-            const slider = new PersistenceSlider(this);
-            this.container.appendChild(slider.getElement());
-            this.controlElements.push(slider);
-        }
-    }
-
-    /**
-     * Returns filtered points in selection rect area
-     * @param points {PersistencePointTuple[]}
-     * @return {PersistencePointTuple[]}
-     */
-    private filterSelection(points: PersistencePointTuple[]) {
-        if (typeof this._renderer === 'undefined') {
-            return points;
-        }
-
-        return points.filter(point => (<Renderer>this._renderer).xPos(point.x1) >= this.activeSelectionBounds.min && (<Renderer>this._renderer).xPos(point.x1) <= this.activeSelectionBounds.max);
-    }
-
-    /**
-     * Returns filtered points with persistence >= slider values <=
-     * @param points
-     * @return {PersistencePointTuple[]}
-     * @private
-     */
-    private filterPersistence(points: PersistencePointTuple[]) {
-        return points.filter(point => point.persistence >= Number(this.activePersistenceBounds.min) && point.persistence <= Number(this.activePersistenceBounds.max));
-    }
-
-    /**
-     * Chunks vtk points into buckets of size _chunks
-     * @returns {PersistencePointTuple[][]}
-     * @private
-     */
-    private chunkPoints(points: PersistencePointTuple[]) {
-        return points.reduce((resultArray, item, index) => {
-            const chunkIndex = Math.floor(index / this.settings.chunks);
-
-            if (!resultArray[chunkIndex]) {
-                resultArray[chunkIndex] = [] // start a new chunk
-            }
-
-            resultArray[chunkIndex].push(item);
-
-            return resultArray;
-        }, <PersistencePointTuple[][]>[]);
-    }
+      return resultArray;
+    }, <PersistencePointTuple[][]>[]);
+  }
 }

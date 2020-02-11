@@ -18,47 +18,47 @@
  * pointscleared: Canvas cleared before re-draw
  */
 export enum EventType {
-    DataLoaded = 'dataloaded',
+  DataLoaded = 'dataloaded',
 
-    SelectionStart = 'selectionstart',
-    SelectionUpdating = 'selectionupdating',
-    SelectionHidden = 'selectionhidden',
-    SelectionEnd = 'selectionend',
+  SelectionStart = 'selectionstart',
+  SelectionUpdating = 'selectionupdating',
+  SelectionHidden = 'selectionhidden',
+  SelectionEnd = 'selectionend',
 
-    SliderDestroyed = 'sliderdestroyed',
-    SliderCreated = 'slidercreated',
+  SliderDestroyed = 'sliderdestroyed',
+  SliderCreated = 'slidercreated',
 
-    PersistenceBoundsUpdating = 'persistenceboundsupdating',
-    PersistenceBoundsSet = 'persistenceboundsset',
+  PersistenceBoundsUpdating = 'persistenceboundsupdating',
+  PersistenceBoundsSet = 'persistenceboundsset',
 
-    PointsDrawn = 'pointsdrawn',
-    PointsCleared = 'pointscleared',
+  PointsDrawn = 'pointsdrawn',
+  PointsCleared = 'pointscleared',
 }
 
 export default class EventDispatcher {
-    /**
-     * The container holding all control elements
-     */
-    private readonly target: Element;
+  /**
+   * The container holding all control elements
+   */
+  private readonly target: Element;
 
-    constructor(target: Element) {
-        this.target = target;
+  constructor(target: Element) {
+    this.target = target;
+  }
+
+  /**
+   * Dispatches an event of type {EventType} on the target element
+   * @param type {EventType}
+   * @param data {undefined|{}} Any data passed to CustomEvent.detail
+   */
+  public dispatch(type: EventType, data: any | undefined = undefined) {
+    let event: Event | CustomEvent;
+
+    if (typeof data !== 'undefined') {
+      event = new CustomEvent(type, { detail: data });
+    } else {
+      event = new Event(type);
     }
 
-    /**
-     * Dispatches an event of type {EventType} on the target element
-     * @param type {EventType}
-     * @param data {undefined|{}} Any data passed to CustomEvent.detail
-     */
-    public dispatch(type: EventType, data: any | undefined = undefined) {
-        let event: Event | CustomEvent;
-
-        if (typeof data !== 'undefined') {
-            event = new CustomEvent(type, {detail: data});
-        } else {
-            event = new Event(type);
-        }
-
-        this.target.dispatchEvent(event);
-    }
+    this.target.dispatchEvent(event);
+  }
 }

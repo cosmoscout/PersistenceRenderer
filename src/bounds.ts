@@ -2,15 +2,16 @@
  * Wrapper class for min/max bounds
  */
 export default class Bounds {
-    public readonly min: number;
-    public readonly max: number;
+  public readonly min: number;
 
-    constructor(min: number, max: number) {
-        this.min = min;
-        this.max = max;
-    }
+  public readonly max: number;
 
-    equals(other: Bounds): boolean {
-        return this.min === other.min && this.max === other.max;
-    };
+  constructor(min: number, max: number) {
+    this.min = min;
+    this.max = max;
+  }
+
+  equals(other: Bounds): boolean {
+    return this.min === other.min && this.max === other.max;
+  }
 }
