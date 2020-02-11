@@ -21,24 +21,18 @@ export default class Renderer extends AbstractControlModule implements IRenderer
   private _context: CanvasRenderingContext2D | undefined;
 
   /**
-   * The canvas that contains the drawn points
-   *
-   * @return {void}
-   * @private
+   * Renders pointChunks to canvas
+   * @see {pointChunks}
+   * @return {Promise<void>}
    */
-  protected createElement(): void {
-    const canvas = document.createElement('canvas');
-    canvas.id = `persistence_canvas_${this.id}`;
+  public update(data: IPointData): Promise<void[]> {
+    this.pointData = data;
+    (<HTMLCanvasElement> this.element).classList.remove('hidden');
+    return this.draw();
+  }
 
-    canvas.classList.add('persistence_canvas', 'hidden');
-    canvas.width = this.controlData.settings.canvasWidth;
-    canvas.height = this.controlData.settings.canvasHeight;
-
-    const context = <CanvasRenderingContext2D>canvas.getContext('2d');
-    context.strokeStyle = this.controlData.settings.strokeStyle;
-
-    this.element = canvas;
-    this._context = context;
+  public init(): void {
+    this.createElement();
   }
 
   /**
@@ -48,17 +42,6 @@ export default class Renderer extends AbstractControlModule implements IRenderer
    */
   public getContext(): CanvasRenderingContext2D {
     return <CanvasRenderingContext2D> this._context;
-  }
-
-  /**
-   * Renders pointChunks to canvas
-   * @see {pointChunks}
-   * @return {Promise<void>}
-   */
-  public update(data: IPointData): Promise<void[]> {
-    this.pointData = data;
-    (<HTMLCanvasElement> this.element).classList.remove('hidden');
-    return this.draw();
   }
 
   /**
@@ -82,9 +65,9 @@ export default class Renderer extends AbstractControlModule implements IRenderer
    */
   public xPos(x: number) {
     const distribution = (x - this.pointData.xMin()) / (this.pointData.xMax() - this.pointData.xMin());
-    const range = (this.rangeXMax - this.rangeXMin) + this.rangeXMin;
+    const range = (this.rangeXMax - this.rangeXMin);
 
-    return distribution * range;
+    return (distribution * range) + this.rangeXMin;
   }
 
   /**
@@ -99,9 +82,30 @@ export default class Renderer extends AbstractControlModule implements IRenderer
     // c = Range Min D = range max
 
     const distribution = (y - this.pointData.yMin()) / (this.pointData.yMax() - this.pointData.yMin());
-    const range = (this.rangeYMax - this.rangeYMin) + this.rangeYMin;
+    const range = (this.rangeYMax - this.rangeYMin);
 
-    return distribution * range;
+    return (distribution * range) + this.rangeYMin;
+  }
+
+  /**
+   * The canvas that contains the drawn points
+   *
+   * @return {void}
+   * @private
+   */
+  private createElement(): void {
+    const canvas = document.createElement('canvas');
+    canvas.id = `persistence_canvas_${this.id}`;
+
+    canvas.classList.add('persistence_canvas', 'hidden');
+    canvas.width = this.controlData.settings.canvasWidth;
+    canvas.height = this.controlData.settings.canvasHeight;
+
+    const context = <CanvasRenderingContext2D>canvas.getContext('2d');
+    context.strokeStyle = this.controlData.settings.strokeStyle;
+
+    this.element = canvas;
+    this._context = context;
   }
 
   /**
@@ -120,6 +124,7 @@ export default class Renderer extends AbstractControlModule implements IRenderer
     this._context.clearRect(0, 0, this.controlData.settings.canvasWidth, this.controlData.settings.canvasHeight);
 
     this.drawLine();
+    this.drawAxes();
 
     const promises: Promise<void>[] = [];
 
@@ -186,16 +191,37 @@ export default class Renderer extends AbstractControlModule implements IRenderer
     const first = this.pointData.points[0];
     const last = this.pointData.points[this.pointData.points.length - 1];
 
-    this._context.beginPath();
-    this._context.moveTo(
+    this.getContext().beginPath();
+    this.getContext().moveTo(
       this.xPos(first.x1),
       this.yPos(first.y1),
     );
-    this._context.lineTo(
+    this.getContext().lineTo(
       this.xPos(last.x1),
       this.yPos(last.y1),
     );
-    this._context.stroke();
+    this.getContext().stroke();
+  }
+
+  private drawAxes() {
+    this.getContext().beginPath();
+    this.getContext().moveTo(
+      this.xPos(0),
+      this.yPos(this.pointData.yMax()),
+    );
+    this.getContext().lineTo(
+      this.xPos(0),
+      this.yPos(0),
+    );
+    this.getContext().moveTo(
+      this.xPos(0),
+      this.yPos(0),
+    );
+    this.getContext().lineTo(
+      this.xPos(this.pointData.xMax()),
+      this.yPos(0),
+    );
+    this.getContext().stroke();
   }
 
   /**

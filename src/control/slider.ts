@@ -34,6 +34,10 @@ export default class PersistenceSlider extends AbstractControlModule {
     return <HTMLElement> this.element;
   }
 
+  public init(): void {
+    this.createElement();
+  }
+
   /**
    * Creates a two-handled slider for given persistence bounds
    * Update exits early if current selected bounds and selected bounds in IPointData equal
@@ -71,7 +75,7 @@ export default class PersistenceSlider extends AbstractControlModule {
   /**
    * Creates the actual noUiSlider container
    */
-  protected createElement() {
+  private createElement() {
     if (typeof (<any>window).noUiSlider === 'undefined') {
       throw new Error('noUiSlider is required');
     }

@@ -15,6 +15,10 @@ export default class Selection extends AbstractControlModule {
     return <HTMLElement> this.element;
   }
 
+  public init(): void {
+    this.createElement();
+  }
+
   /**
    * @inheritDoc
    */
@@ -27,7 +31,7 @@ export default class Selection extends AbstractControlModule {
    * @return {void}
    * @private
    */
-  protected createElement() {
+  private createElement() {
     const selectionRect = document.createElement('div');
     selectionRect.id = `persistence_selection_${this.id}`;
 

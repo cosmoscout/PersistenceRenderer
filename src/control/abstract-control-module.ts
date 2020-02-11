@@ -37,8 +37,6 @@ export default abstract class AbstractControlModule {
     this.events = controlData.events;
     this.controlData = controlData;
     this.pointData = controlData;
-
-    this.createElement();
   }
 
   /**
@@ -52,5 +50,5 @@ export default abstract class AbstractControlModule {
    */
   public abstract update(data: IPointData): any;
 
-  protected abstract createElement(): void;
+  public abstract init(): void;
 }
