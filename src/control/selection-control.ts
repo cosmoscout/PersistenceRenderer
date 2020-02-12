@@ -2,14 +2,15 @@ import AbstractControl from './abstract-control';
 import Bounds from '../bounds';
 import { EventType } from '../event-dispatcher';
 
+/**
+ * Very much @TODO
+ */
 export default class SelectionControl extends AbstractControl {
   private element: HTMLElement | undefined;
 
   private canvas: HTMLCanvasElement | undefined;
 
   private selectionBounds: Bounds | undefined;
-
-  private selectionStart: number = 0;
 
   public getElement(): HTMLElement {
     return <HTMLElement> this.element;
@@ -33,6 +34,7 @@ export default class SelectionControl extends AbstractControl {
    */
   private createElement() {
     const selectionRect = document.createElement('div');
+    selectionRect.hidden = true;
     selectionRect.id = `persistence_selection_${this.id}`;
 
     selectionRect.classList.add('persistence_selection');
@@ -43,107 +45,70 @@ export default class SelectionControl extends AbstractControl {
       width: '0px',
       height: '0px',
       mixBlendMode: 'difference',
-      display: 'none',
+      // display: 'none',
       willChange: 'top, left, bottom, right, width, height',
       top: 0,
       left: 0,
       position: 'absolute',
       zIndex: 1,
-    });
-
-    selectionRect.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.hideSelection();
-
-      this.pointData.setActiveSelectionBounds(this.selectionBounds);
+      boxSizing: 'border-box',
     });
 
     this.element = selectionRect;
+
     this.addListener();
   }
 
   private addListener() {
     this.canvas = <HTMLCanvasElement> this.controlData.renderer.getCanvas();
+    let x1 = 0; let
+      x2 = 0;
+    const reCalc = () => {
+      const x3 = Math.min(x1, x2);
+      const x4 = Math.max(x1, x2);
 
-    (<HTMLCanvasElement> this.canvas).addEventListener('mousedown', (e) => {
-      e.stopPropagation();
-      this.initSelection(e);
-    });
+      const height = (<HTMLElement> this.canvas).offsetHeight - this.controlData.settings.getPadding('bottom') - 7;
 
-    (<HTMLCanvasElement> this.canvas).addEventListener('mousemove', (e) => {
-      this.updateSelection(e);
-    });
+      (<HTMLElement> this.element).style.left = `${x3}px`;
+      (<HTMLElement> this.element).style.top = `${(<HTMLElement> this.canvas).offsetTop + 5}px`;
+      (<HTMLElement> this.element).style.width = `${x4 - x3}px`;
+      (<HTMLElement> this.element).style.height = `${height}px`;
+    };
 
-    (<HTMLCanvasElement> this.canvas).addEventListener('mouseup', () => {
-      // console.log((<HTMLElement> this.element).offsetWidth);
+    (<HTMLCanvasElement> this.canvas).onmousedown = (e) => {
+      (<HTMLElement> this.element).hidden = false;
+      this.events.dispatch(EventType.SelectionStart);
+      x1 = e.clientX;
+      reCalc();
+    };
 
-      if ((<HTMLElement> this.element).offsetWidth < 10) {
-        this.hideSelection();
-        return;
-      }
+    (<HTMLCanvasElement> this.canvas).onmousemove = (e) => {
+      this.events.dispatch(EventType.SelectionUpdating);
+      x2 = e.clientX;
+      reCalc();
+    };
 
+    (<HTMLElement> this.element).onmousemove = (e) => {
+      this.events.dispatch(EventType.SelectionUpdating);
+      x2 = e.clientX;
+      reCalc();
+    };
+
+    (<HTMLCanvasElement> this.canvas).onmouseup = () => {
       this.getSelectionBounds();
 
       this.pointData.setActiveSelectionBounds(this.selectionBounds);
       this.events.dispatch(EventType.SelectionEnd);
-    });
-  }
+      (<HTMLElement> this.element).hidden = true;
+    };
 
-  private initSelection(event: MouseEvent) {
-    const x = (event.clientX - (<HTMLCanvasElement> this.canvas).getBoundingClientRect().left)
-        + (<HTMLCanvasElement> this.canvas).offsetLeft;
+    (<HTMLElement> this.element).onmouseup = () => {
+      this.getSelectionBounds();
 
-    this.selectionStart = event.clientX;
-
-    Object.assign(this.getElement().style, {
-      width: '0px',
-      height: `${this.controlData.settings.canvasHeight - this.controlData.settings.padding}px`,
-      top: `${(<HTMLCanvasElement> this.canvas).offsetTop}px`,
-      left: `${x}px`,
-    });
-
-    this.events.dispatch(EventType.SelectionStart);
-  }
-
-  private updateSelection(event: MouseEvent) {
-    if (event.buttons !== 1) {
-      return;
-    }
-
-    let style;
-    const canvasRect = (<HTMLCanvasElement> this.canvas).getBoundingClientRect();
-
-    if (event.clientX >= this.selectionStart) {
-      this.getElement().style.removeProperty('right');
-      style = {
-        width: `${event.clientX - this.getElement().getBoundingClientRect().left}px`,
-        left: `${this.selectionStart - canvasRect.left + (<HTMLCanvasElement> this.canvas).offsetLeft}px`,
-      };
-    } else {
-      this.getElement().style.removeProperty('left');
-      style = {
-        width: `${this.getElement().getBoundingClientRect().right - event.clientX}px`,
-        right: `${canvasRect.right - this.selectionStart + (<HTMLCanvasElement> this.canvas).offsetLeft}px`,
-      };
-    }
-
-    this.events.dispatch(EventType.SelectionUpdating);
-
-    Object.assign(this.getElement().style, style, {
-      display: 'block',
-    });
-  }
-
-  private hideSelection() {
-    Object.assign(this.getElement().style, {
-      display: 'none',
-      width: 0,
-    });
-
-    this.selectionBounds = undefined;
-    this.selectionStart = 0;
-
-    this.events.dispatch(EventType.SelectionHidden);
+      this.pointData.setActiveSelectionBounds(this.selectionBounds);
+      this.events.dispatch(EventType.SelectionEnd);
+      (<HTMLElement> this.element).hidden = true;
+    };
   }
 
   private getSelectionBounds() {
