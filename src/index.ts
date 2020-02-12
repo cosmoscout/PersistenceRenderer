@@ -325,14 +325,14 @@ export default class PersistenceRenderer implements IPointData, IControlData {
     this.controlElements.push(renderer);
     this._renderer = renderer;
 
-    if (this.settings.enableSelection) {
+    if (this.settings.enableSelectionFilter) {
       const selection = new SelectionControl(this);
       selection.init();
       this.container.appendChild(selection.getElement());
       this.controlElements.push(selection);
     }
 
-    if (this.settings.enableSlider) {
+    if (this.settings.enablePersistenceFilter) {
       const slider = new PersistenceControl(this);
       slider.init();
       this.container.appendChild(slider.getElement());

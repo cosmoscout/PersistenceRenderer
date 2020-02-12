@@ -24,8 +24,8 @@ export interface ISettings {
   readonly waitTime: number;
   readonly pointDrawFunction: pointDrawFunction | undefined;
 
-  readonly enableSelection: boolean;
-  readonly enableSlider: boolean;
+  readonly enableSelectionFilter: boolean;
+  readonly enablePersistenceFilter: boolean;
   readonly enableAxes: boolean;
 
   readonly axesTickCount: number | number[];
@@ -68,8 +68,8 @@ export const DefaultSettings: ISettings = {
   waitTime: 5,
   pointDrawFunction: undefined,
 
-  enableSelection: true,
-  enableSlider: true,
+  enableSelectionFilter: false,
+  enablePersistenceFilter: false,
   enableAxes: true,
 
   axesTickCount: 5,
