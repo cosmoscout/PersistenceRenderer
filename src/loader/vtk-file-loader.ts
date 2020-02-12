@@ -1,6 +1,6 @@
 // @ts-ignore
 import * as vtk from 'vtk.js';
-import PersistencePointTuple, { Coordinate, CriticalType, Point3D } from '../point-tuple';
+import PersistencePointTuple, { ICoordinate, ICriticalType, IPoint3D } from '../persistence-point-tuple';
 import { ILoader, ILoaderData } from './loader-interface';
 
 export default class VtkFileLoader implements ILoader {
@@ -10,12 +10,31 @@ export default class VtkFileLoader implements ILoader {
    */
   private readonly settings: {};
 
+  /**
+   * VTK Dataset reader
+   * See: https://kitware.github.io/vtk-js/api/IO_Core_HttpDataSetReader.html
+   */
   private readonly reader: vtk.IO.Core.vtkHttpDataSetReader;
 
+  /**
+   * Point data from getPoints().getData()
+   * Contains all points in a one-dimensional array
+   * Sorted as [x1, y1, z1, x2, y2, z2, ..., xn, yn, zn]
+   */
   private rawPointData: Float32Array | undefined;
 
+  /**
+   * Critical type data from getPointData().getArray(1).getData()
+   * One-dimensional array containing all types for all point tuples
+   * Sorted as [criticalTypeLower1, criticalTypeUpper1, criticalTypeLower2, ...]
+   */
   private criticalTypeData: Float32Array | undefined;
 
+  /**
+   * Coordinate data for all points
+   * Sorted like rawPointData
+   * @see {rawPointData}
+   */
   private coordinateData: Float32Array | undefined;
 
   /**
@@ -32,6 +51,7 @@ export default class VtkFileLoader implements ILoader {
 
   /**
    * HttpDataSetReader instance
+   * @returns {vtk.IO.Core.vtkHttpDataSetReader}
    */
   public getReader(): vtk.IO.Core.vtkHttpDataSetReader {
     return this.reader;
@@ -85,6 +105,12 @@ export default class VtkFileLoader implements ILoader {
     });
   }
 
+  /**
+   * Creates a point tuple instance from raw- / critical- / coordinate-data
+   * @param index {number} Raw point data mod 6
+   * @param criticalIndex {number}
+   * @returns {PersistencePointTuple}
+   */
   private createPointTuple(index: number, criticalIndex: number): PersistencePointTuple {
     if (typeof this.rawPointData === 'undefined'
         || typeof this.coordinateData === 'undefined'
@@ -92,24 +118,24 @@ export default class VtkFileLoader implements ILoader {
       throw new Error('Can\'t create PersistencePointTuple from undefined data.');
     }
 
-    const lower: Point3D = {
+    const lower: IPoint3D = {
       x: this.rawPointData[index],
       y: this.rawPointData[index + 1],
       z: this.rawPointData[index + 2],
     };
 
-    const upper: Point3D = {
+    const upper: IPoint3D = {
       x: this.rawPointData[index + 3],
       y: this.rawPointData[index + 4],
       z: this.rawPointData[index + 5],
     };
 
-    const criticalType: CriticalType = {
+    const criticalType: ICriticalType = {
       lower: this.criticalTypeData[criticalIndex],
       upper: this.criticalTypeData[criticalIndex + 1],
     };
 
-    const coordinates: Coordinate = {
+    const coordinates: ICoordinate = {
       lower: {
         x: this.coordinateData[index],
         y: this.coordinateData[index + 1],
