@@ -8,37 +8,78 @@
  * chunks: Chunk bucket size for vtk points
  * waitTime: Time in ms between chunk draws
  *
- * @type {Settings}
+ * @type {ISettings}
  */
-export interface Settings {
-  readonly padding: number;
+export interface ISettings {
+  readonly padding: number | Padding;
 
   readonly canvasWidth: number;
   readonly canvasHeight: number;
   readonly strokeStyle: string;
-
-  readonly enableTicks: boolean;
-
+  readonly fillStyle: string;
 
   readonly chunks: number;
   readonly waitTime: number;
 
   readonly enableSelection: boolean;
   readonly enableSlider: boolean;
+  readonly enableAxes: boolean;
+
+  readonly axesTickCount: number | number[];
+  readonly axesTickLength: number | number[];
+
+  /**
+   * Accessor for settings padding
+   * If pos is undefined padding.left or padding will be returned
+   *
+   * @param type {string|undefined} left / top / right / bottom
+   * @throws {Error} If key does not exist on padding
+   */
+  getPadding(type: string): number;
 }
 
-export const DefaultSettings: Settings = {
-  padding: 10,
+export type Padding = {
+  [key: string]: number;
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+};
+
+export const DefaultSettings: ISettings = {
+  padding: {
+    left: 20,
+    top: 10,
+    right: 10,
+    bottom: 20,
+  },
 
   canvasWidth: 500,
   canvasHeight: 500,
   strokeStyle: '#000',
-
-  enableTicks: true,
+  fillStyle: '#000',
 
   chunks: 100,
-  waitTime: 150,
+  waitTime: 5,
 
   enableSelection: true,
   enableSlider: true,
+  enableAxes: true,
+
+  axesTickCount: 5,
+  axesTickLength: 5,
+
+  getPadding(pos: string = 'left'): number {
+    const { padding } = this;
+
+    if (typeof padding === 'number') {
+      return padding;
+    }
+
+    if (typeof padding[pos] === 'undefined') {
+      throw new Error(`${pos} does not exist on [left, top, right, bottom].`);
+    }
+
+    return padding[pos];
+  },
 };
