@@ -1,16 +1,17 @@
-import PersistencePointTuple from './point-tuple';
+import PersistencePointTuple from './persistence-point-tuple';
 import VtkFileLoader from './loader/vtk-file-loader';
 import EventDispatcher, { EventType } from './event-dispatcher';
 import { IPointData } from './point-data-interface';
 import { ILoader, ILoaderData } from './loader/loader-interface';
 import Renderer from './control/renderer';
-import AbstractControlModule from './control/abstract-control-module';
-import PersistenceSlider from './control/slider';
+import AbstractControl from './control/abstract-control';
+import PersistenceControl from './control/persistence-control';
 import Bounds from './bounds';
-import { DefaultSettings, Settings } from './settings';
-import Selection from './control/selection';
+import SelectionControl from './control/selection-control';
 import { IControlData } from './control-data-interface';
 import { IRenderer } from './control/renderer-interface';
+import AxesControl from './control/axes-control';
+import { DefaultSettings, ISettings } from './settings';
 
 export default class PersistenceRenderer implements IPointData, IControlData {
   /**
@@ -33,10 +34,10 @@ export default class PersistenceRenderer implements IPointData, IControlData {
 
   /**
    * @see {DefaultSettings}
-   * @type {Settings}
+   * @type {ISettings}
    * @private
    */
-  public readonly settings: Settings = <Settings>{};
+  public readonly settings: ISettings = <ISettings>{};
 
   /**
    * Canvas instance
@@ -62,7 +63,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
   /**
    * Instantiated control elements
    */
-  private controlElements: AbstractControlModule[];
+  private controlElements: AbstractControl[];
 
   /**
    * Data loader instance
@@ -72,10 +73,10 @@ export default class PersistenceRenderer implements IPointData, IControlData {
   /**
    * @param container {string|HTMLElement} Query selector string or HTMLElement to place everything into
    * @param id {string}
-   * @param settings {Settings}
+   * @param settings {ISettings}
    * @throws {Error} If dependencies are not loaded
    */
-  constructor(container: HTMLElement | string, id: string, settings: Settings = <Settings>{}) {
+  constructor(container: HTMLElement | string, id: string, settings: ISettings = <ISettings>{}) {
     if (typeof container === 'string') {
       const element = document.querySelector(container);
       if (element === null) {
@@ -96,7 +97,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
     this.loader = new VtkFileLoader();
     this.events = new EventDispatcher(this.container);
 
-    this.controlElements = new Array<AbstractControlModule>();
+    this.controlElements = new Array<AbstractControl>();
 
     this.createControlElements();
   }
@@ -295,7 +296,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
 
   /**
    * Filters points by persistence and selection
-   * @return {PersistencePointTuple[]}
+   * @returns {PersistencePointTuple[]}
    */
   public filteredPoints(): PersistencePointTuple[] {
     if (typeof this.points === 'undefined') {
@@ -325,24 +326,30 @@ export default class PersistenceRenderer implements IPointData, IControlData {
     this._renderer = renderer;
 
     if (this.settings.enableSelection) {
-      const selection = new Selection(this);
+      const selection = new SelectionControl(this);
       selection.init();
       this.container.appendChild(selection.getElement());
       this.controlElements.push(selection);
     }
 
     if (this.settings.enableSlider) {
-      const slider = new PersistenceSlider(this);
+      const slider = new PersistenceControl(this);
       slider.init();
       this.container.appendChild(slider.getElement());
       this.controlElements.push(slider);
+    }
+
+    if (this.settings.enableAxes) {
+      const axes = new AxesControl(this);
+      axes.init();
+      this.controlElements.push(axes);
     }
   }
 
   /**
    * Returns filtered points in selection rect area
    * @param points {PersistencePointTuple[]}
-   * @return {PersistencePointTuple[]}
+   * @returns {PersistencePointTuple[]}
    */
   private filterSelection(points: PersistencePointTuple[]) {
     if (typeof this._renderer === 'undefined') {
@@ -356,7 +363,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
   /**
    * Returns filtered points with persistence >= slider values <=
    * @param points
-   * @return {PersistencePointTuple[]}
+   * @returns {PersistencePointTuple[]}
    * @private
    */
   private filterPersistence(points: PersistencePointTuple[]) {

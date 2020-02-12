@@ -1,5 +1,5 @@
 import noUiSlider from 'nouislider';
-import AbstractControlModule from './abstract-control-module';
+import AbstractControl from './abstract-control';
 import { EventType } from '../event-dispatcher';
 import { IPointData } from '../point-data-interface';
 import Bounds from '../bounds';
@@ -7,22 +7,22 @@ import Bounds from '../bounds';
 /**
  * Persistence Bounds Control Slider
  */
-export default class PersistenceSlider extends AbstractControlModule {
+export default class PersistenceControl extends AbstractControl {
   /**
-   * @type {HTMLElement}
+   * @type {HTMLElement|undefined}
    * @private
    */
   private element: HTMLElement | undefined;
 
   /**
-   * @type {Bounds}
+   * @type {Bounds|undefined}
    * @private
    */
   private selectedPersistenceBounds: Bounds | undefined;
 
   /**
    * Current noUiSlider instance
-   * @type {noUiSlider.noUiSlider}
+   * @type {noUiSlider.noUiSlider|undefined}
    * @private
    */
   private noUiSlider: noUiSlider.noUiSlider | undefined;
@@ -34,13 +34,17 @@ export default class PersistenceSlider extends AbstractControlModule {
     return <HTMLElement> this.element;
   }
 
+  /**
+   * @inheritDoc
+   */
   public init(): void {
     this.createElement();
   }
 
   /**
    * Creates a two-handled slider for given persistence bounds
-   * Update exits early if current selected bounds and selected bounds in IPointData equal
+   * Update exits early if current selected bounds and selected bounds in IPointData are equal
+   * @returns {void}
    */
   public update(data: IPointData): void {
     if (typeof this.selectedPersistenceBounds !== 'undefined'
@@ -74,8 +78,10 @@ export default class PersistenceSlider extends AbstractControlModule {
 
   /**
    * Creates the actual noUiSlider container
+   * @returns {void}
+   * @private
    */
-  private createElement() {
+  private createElement(): void {
     if (typeof (<any>window).noUiSlider === 'undefined') {
       throw new Error('noUiSlider is required');
     }
@@ -90,8 +96,10 @@ export default class PersistenceSlider extends AbstractControlModule {
 
   /**
    * Adds all needed event listeners to the slider instance
+   * @returns {void}
+   * @private
    */
-  private addListener() {
+  private addListener(): void {
     if (typeof this.noUiSlider === 'undefined') {
       console.error('Trying to add event listeners to non existing noUiSlider.');
       return;

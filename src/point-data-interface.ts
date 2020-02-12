@@ -1,4 +1,4 @@
-import PersistencePointTuple from './point-tuple';
+import PersistencePointTuple from './persistence-point-tuple';
 import Bounds from './bounds';
 
 export interface IPointData {

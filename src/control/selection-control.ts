@@ -1,8 +1,8 @@
-import AbstractControlModule from './abstract-control-module';
+import AbstractControl from './abstract-control';
 import Bounds from '../bounds';
 import { EventType } from '../event-dispatcher';
 
-export default class Selection extends AbstractControlModule {
+export default class SelectionControl extends AbstractControl {
   private element: HTMLElement | undefined;
 
   private canvas: HTMLCanvasElement | undefined;
@@ -28,7 +28,7 @@ export default class Selection extends AbstractControlModule {
   /**
    * Resizable rect for point selection
    *
-   * @return {void}
+   * @returns {void}
    * @private
    */
   private createElement() {

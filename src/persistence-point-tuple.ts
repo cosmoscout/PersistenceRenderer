@@ -1,38 +1,45 @@
-export interface Point3D {
+/**
+ * Point coordinate in 3D-Space
+ */
+export interface IPoint3D {
   readonly x: number;
   readonly y: number;
   readonly z: number;
 }
 
-export interface Coordinate {
-  readonly lower: Point3D;
-  readonly upper: Point3D;
+/**
+ * Coordinate containing a lower and upper point in 3D
+ */
+export interface ICoordinate {
+  readonly lower: IPoint3D;
+  readonly upper: IPoint3D;
 }
 
-export interface CriticalType {
+export interface ICriticalType {
   readonly lower: number;
   readonly upper: number;
 }
 
 export default class PersistencePointTuple {
   /**
+   * Point persistence computed as upper.y - lower.y
    * @type {number}
    */
   readonly persistence: number;
 
-  readonly criticalType: CriticalType;
+  readonly criticalType: ICriticalType;
 
-  readonly coordinates: Coordinate;
+  readonly coordinates: ICoordinate;
 
   /**
    * Lower Point on canvas
    */
-  readonly lower: Point3D;
+  readonly lower: IPoint3D;
 
   /**
    * Upper Point on canvas
    */
-  readonly upper: Point3D;
+  readonly upper: IPoint3D;
 
   /**
    * @param lower
@@ -40,7 +47,7 @@ export default class PersistencePointTuple {
    * @param criticalType
    * @param coordinates
    */
-  constructor(lower: Point3D, upper: Point3D, criticalType: CriticalType, coordinates: Coordinate) {
+  constructor(lower: IPoint3D, upper: IPoint3D, criticalType: ICriticalType, coordinates: ICoordinate) {
     this.lower = lower;
     this.upper = upper;
     this.criticalType = criticalType;

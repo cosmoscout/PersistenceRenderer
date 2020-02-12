@@ -5,7 +5,7 @@ import { IControlData } from '../control-data-interface';
 /**
  * Base class for arbitrary control elements
  */
-export default abstract class AbstractControlModule {
+export default abstract class AbstractControl {
   /**
    * Unique ID added to control elements
    */
@@ -50,5 +50,10 @@ export default abstract class AbstractControlModule {
    */
   public abstract update(data: IPointData): any;
 
+  /**
+   * Init function
+   * Should be called after instantiating the control element
+   * Typically creates the element
+   */
   public abstract init(): void;
 }
