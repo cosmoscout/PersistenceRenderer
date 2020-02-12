@@ -1,11 +1,11 @@
-import PersistencePointTuple from './point-tuple';
+import PersistencePointTuple from './persistence-point-tuple';
 import EventDispatcher from './event-dispatcher';
 import { IPointData } from './point-data-interface';
 import { ILoader } from './loader/loader-interface';
-import Renderer from './control/renderer';
 import Bounds from './bounds';
-import { Settings } from './settings';
 import { IControlData } from './control-data-interface';
+import { IRenderer } from './control/renderer-interface';
+import { ISettings } from './settings';
 export default class PersistenceRenderer implements IPointData, IControlData {
     /**
      * @type {Element}
@@ -24,13 +24,13 @@ export default class PersistenceRenderer implements IPointData, IControlData {
     readonly events: EventDispatcher;
     /**
      * @see {DefaultSettings}
-     * @type {Settings}
+     * @type {ISettings}
      * @private
      */
-    readonly settings: Settings;
+    readonly settings: ISettings;
     /**
      * Canvas instance
-     * @see {Renderer}
+     * @see {IRenderer}
      */
     private _renderer;
     /**
@@ -53,10 +53,10 @@ export default class PersistenceRenderer implements IPointData, IControlData {
     /**
      * @param container {string|HTMLElement} Query selector string or HTMLElement to place everything into
      * @param id {string}
-     * @param settings {Settings}
+     * @param settings {ISettings}
      * @throws {Error} If dependencies are not loaded
      */
-    constructor(container: HTMLElement | string, id: string, settings: Settings);
+    constructor(container: HTMLElement | string, id: string, settings?: ISettings);
     /**
      * Set a different loader instance
      * @param loader {ILoader}
@@ -73,7 +73,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
      * The Renderer instance created by
      * @see {createControlElements}
      */
-    get renderer(): Renderer;
+    get renderer(): IRenderer;
     /**
      * Calls update on each instantiated control element
      */
@@ -145,7 +145,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
     yMax(): number;
     /**
      * Filters points by persistence and selection
-     * @return {PersistencePointTuple[]}
+     * @returns {PersistencePointTuple[]}
      */
     filteredPoints(): PersistencePointTuple[];
     /**
@@ -160,13 +160,13 @@ export default class PersistenceRenderer implements IPointData, IControlData {
     /**
      * Returns filtered points in selection rect area
      * @param points {PersistencePointTuple[]}
-     * @return {PersistencePointTuple[]}
+     * @returns {PersistencePointTuple[]}
      */
     private filterSelection;
     /**
      * Returns filtered points with persistence >= slider values <=
      * @param points
-     * @return {PersistencePointTuple[]}
+     * @returns {PersistencePointTuple[]}
      * @private
      */
     private filterPersistence;

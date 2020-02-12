@@ -1,45 +1,45 @@
-import AbstractControlModule from './abstract-control-module';
+import AbstractControl from './abstract-control';
 import { IPointData } from '../point-data-interface';
-import IRenderer from './renderer-interface';
+import { IRenderer, pointDrawFunction } from './renderer-interface';
 /**
  * Point renderer
  */
-export default class Renderer extends AbstractControlModule implements IRenderer {
+export default class Renderer extends AbstractControl implements IRenderer {
     /**
+     * Canvas Element
      * @type {HTMLCanvasElement}
      * @private
      */
     private element;
     /**
+     * Canvas drawing context
      * @type {CanvasRenderingContext2D}
      * @private
      */
     private _context;
     /**
-     * The canvas that contains the drawn points
-     *
-     * @return {void}
-     * @private
+     * Renders points to canvas
+     * @see {pointChunks}
+     * @returns {Promise<void>}
      */
-    protected createElement(): void;
+    update(data: IPointData): Promise<void[]>;
+    /**
+     * Creates the canvas element
+     */
+    init(): void;
     /**
      * Canvas Rendering context created in
      * @see {createElement}
-     * @return {CanvasRenderingContext2D}
+     * @returns {CanvasRenderingContext2D}
      */
     getContext(): CanvasRenderingContext2D;
-    /**
-     * Renders pointChunks to canvas
-     * @see {pointChunks}
-     * @return {Promise<void>}
-     */
-    update(data: IPointData): Promise<void[]>;
     /**
      * @inheritDoc
      */
     getElement(): HTMLElement;
     /**
      * Drawing canvas
+     * @returns {HTMLCanvasElement}
      */
     getCanvas(): HTMLCanvasElement;
     /**
@@ -55,27 +55,53 @@ export default class Renderer extends AbstractControlModule implements IRenderer
      */
     yPos(y: number): number;
     /**
+     * The default point draw function
+     * Draws a line from lower to upper
+     *
+     * @param point {PersistencePointTuple}
+     * @param renderer {IRenderer}
+     */
+    readonly defaultDrawFunction: pointDrawFunction;
+    /**
+     * Creates the canvas that contains the drawn points
+     *
+     * @returns {void}
+     * @private
+     */
+    private createElement;
+    /**
      * Draws the persistence line and point chunks
-     * @return Promise<void>
+     * @returns Promise<void[]>
+     *     @throws {Error} If canvas context is undefined
+     * @private
      */
     private draw;
     /**
      * Timeout promise used to delay chunk drawing
+     * @returns {Promise<void>}
+     * @private
      */
     private waitFor;
     /**
+     * Returns either the default draw fn or a custom one from settings
+     */
+    private getPointDrawFunction;
+    /**
      * Asynchronously draws points on the context
      * @param points {PersistencePointTuple[]}
+     * @param i {number} Current chunk index
      * @returns {Promise<void>}
+     * @throws {Error} If canvas context is undefined
      * @private
      */
     private drawPoints;
     /**
      * Draws the persistence line from min to max
      * @returns void
+     * @throws {Error} If point data is empty or context is undefined
      * @private
      */
-    private drawLine;
+    private drawPersistenceLine;
     /**
      * Axis x-range start
      * @returns {number}
