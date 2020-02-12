@@ -2,7 +2,7 @@ import PersistencePointTuple from '../persistence-point-tuple';
 import AbstractControl from './abstract-control';
 import { EventType } from '../event-dispatcher';
 import { IPointData } from '../point-data-interface';
-import {IRenderer, pointDrawFunction} from './renderer-interface';
+import { IRenderer, pointDrawFunction } from './renderer-interface';
 
 /**
  * Point renderer
@@ -45,7 +45,11 @@ export default class Renderer extends AbstractControl implements IRenderer {
    * @returns {CanvasRenderingContext2D}
    */
   public getContext(): CanvasRenderingContext2D {
-    return <CanvasRenderingContext2D> this._context;
+    if (typeof this._context === 'undefined') {
+      throw new Error('Canvas context is undefined');
+    }
+
+    return this._context;
   }
 
   /**
@@ -100,10 +104,6 @@ export default class Renderer extends AbstractControl implements IRenderer {
    * @param renderer {IRenderer}
    */
   public readonly defaultDrawFunction: pointDrawFunction = (point:PersistencePointTuple, renderer: IRenderer) => {
-    if (typeof this._context === 'undefined') {
-      throw new Error('Canvas Context is undefined');
-    }
-
     renderer.getContext().beginPath();
     renderer.getContext().moveTo(renderer.xPos(point.lower.x), renderer.yPos(point.lower.y));
     renderer.getContext().lineTo(renderer.xPos(point.upper.x), renderer.yPos(point.upper.y));
@@ -139,13 +139,9 @@ export default class Renderer extends AbstractControl implements IRenderer {
    * @private
    */
   private draw(): Promise<void[]> {
-    if (typeof this._context === 'undefined') {
-      throw new Error('Canvas Context is undefined');
-    }
-
     const chunks = this.pointData.filteredPointsChunked();
 
-    this._context.clearRect(0, 0, this.controlData.settings.canvasWidth, this.controlData.settings.canvasHeight);
+    this.getContext().clearRect(0, 0, this.controlData.settings.canvasWidth, this.controlData.settings.canvasHeight);
     this.events.dispatch(EventType.PointsCleared);
 
     this.drawPersistenceLine();
@@ -195,7 +191,7 @@ export default class Renderer extends AbstractControl implements IRenderer {
   private async drawPoints(points: PersistencePointTuple[], i: number): Promise<void> {
     await this.waitFor(this.controlData.settings.waitTime * i);
 
-    points.forEach(point => this.getPointDrawFunction()(point, this));
+    points.forEach((point) => this.getPointDrawFunction()(point, this));
   }
 
   /**
@@ -205,7 +201,7 @@ export default class Renderer extends AbstractControl implements IRenderer {
    * @private
    */
   private drawPersistenceLine(): void {
-    if (this.pointData.points.length === 0 || typeof this._context === 'undefined') {
+    if (this.pointData.points.length === 0) {
       throw new Error('Can\'t draw persistence line without points.');
     }
 

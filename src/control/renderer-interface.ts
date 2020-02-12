@@ -1,4 +1,4 @@
-import PersistencePointTuple from "../persistence-point-tuple";
+import PersistencePointTuple from '../persistence-point-tuple';
 
 /**
  * Render interface for accessing the canvas and canvas context
@@ -7,7 +7,7 @@ export interface IRenderer {
   getCanvas(): HTMLCanvasElement;
   getContext(): CanvasRenderingContext2D;
 
-  defaultDrawFunction: pointDrawFunction;
+  readonly defaultDrawFunction: pointDrawFunction;
 
   xPos(x: number): number;
   yPos(y: number): number;
@@ -23,4 +23,3 @@ export interface IRenderer {
 export type pointDrawFunction = {
   (point: PersistencePointTuple, renderer: IRenderer): void;
 };
-

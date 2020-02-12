@@ -10,7 +10,7 @@
  *
  * @type {ISettings}
  */
-import {pointDrawFunction} from "./control/renderer-interface";
+import { pointDrawFunction } from './control/renderer-interface';
 
 export interface ISettings {
   readonly padding: number | Padding;
