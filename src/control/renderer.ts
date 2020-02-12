@@ -1,5 +1,5 @@
-import PersistencePointTuple from '../point-tuple';
-import AbstractControlModule from './abstract-control-module';
+import PersistencePointTuple from '../persistence-point-tuple';
+import AbstractControl from './abstract-control';
 import { EventType } from '../event-dispatcher';
 import { IPointData } from '../point-data-interface';
 import { IRenderer } from './renderer-interface';
@@ -7,30 +7,34 @@ import { IRenderer } from './renderer-interface';
 /**
  * Point renderer
  */
-export default class Renderer extends AbstractControlModule implements IRenderer {
+export default class Renderer extends AbstractControl implements IRenderer {
   /**
+   * Canvas Element
    * @type {HTMLCanvasElement}
    * @private
    */
   private element: HTMLCanvasElement | undefined;
 
   /**
+   * Canvas drawing context
    * @type {CanvasRenderingContext2D}
    * @private
    */
   private _context: CanvasRenderingContext2D | undefined;
 
   /**
-   * Renders pointChunks to canvas
+   * Renders points to canvas
    * @see {pointChunks}
-   * @return {Promise<void>}
+   * @returns {Promise<void>}
    */
   public update(data: IPointData): Promise<void[]> {
     this.pointData = data;
-    (<HTMLCanvasElement> this.element).classList.remove('hidden');
     return this.draw();
   }
 
+  /**
+   * Creates the canvas element
+   */
   public init(): void {
     this.createElement();
   }
@@ -38,7 +42,7 @@ export default class Renderer extends AbstractControlModule implements IRenderer
   /**
    * Canvas Rendering context created in
    * @see {createElement}
-   * @return {CanvasRenderingContext2D}
+   * @returns {CanvasRenderingContext2D}
    */
   public getContext(): CanvasRenderingContext2D {
     return <CanvasRenderingContext2D> this._context;
@@ -53,6 +57,7 @@ export default class Renderer extends AbstractControlModule implements IRenderer
 
   /**
    * Drawing canvas
+   * @returns {HTMLCanvasElement}
    */
   public getCanvas(): HTMLCanvasElement {
     return <HTMLCanvasElement> this.getElement();
@@ -63,7 +68,7 @@ export default class Renderer extends AbstractControlModule implements IRenderer
    * @param x {number} Point form 0 - 1
    * @returns {number} Mapped point
    */
-  public xPos(x: number) {
+  public xPos(x: number): number {
     const distribution = (x - this.pointData.xMin()) / (this.pointData.xMax() - this.pointData.xMin());
     const range = (this.rangeXMax - this.rangeXMin);
 
@@ -75,7 +80,7 @@ export default class Renderer extends AbstractControlModule implements IRenderer
    * @param y {number} Point form 0 - 1
    * @returns {number} Mapped point
    */
-  public yPos(y: number) {
+  public yPos(y: number): number {
     // Y = (X-A)/(B-A) * (D-C) + C
     // ( (X-A)/(A-B) * (C-D) ) * -1 + D  - Inverse
     // A = Xmin B = Xmax
@@ -88,21 +93,22 @@ export default class Renderer extends AbstractControlModule implements IRenderer
   }
 
   /**
-   * The canvas that contains the drawn points
+   * Creates the canvas that contains the drawn points
    *
-   * @return {void}
+   * @returns {void}
    * @private
    */
   private createElement(): void {
     const canvas = document.createElement('canvas');
     canvas.id = `persistence_canvas_${this.id}`;
 
-    canvas.classList.add('persistence_canvas', 'hidden');
+    canvas.classList.add('persistence_canvas');
     canvas.width = this.controlData.settings.canvasWidth;
     canvas.height = this.controlData.settings.canvasHeight;
 
     const context = <CanvasRenderingContext2D>canvas.getContext('2d');
     context.strokeStyle = this.controlData.settings.strokeStyle;
+    context.fillStyle = this.controlData.settings.fillStyle;
 
     this.element = canvas;
     this._context = context;
@@ -110,30 +116,28 @@ export default class Renderer extends AbstractControlModule implements IRenderer
 
   /**
    * Draws the persistence line and point chunks
-   * @return Promise<void>
+   * @returns Promise<void[]>
+   *     @throws {Error} If canvas context is undefined
+   * @private
    */
-  private draw() {
+  private draw(): Promise<void[]> {
     if (typeof this._context === 'undefined') {
       throw new Error('Canvas Context is undefined');
     }
 
     const chunks = this.pointData.filteredPointsChunked();
 
+    this._context.clearRect(0, 0, this.controlData.settings.canvasWidth, this.controlData.settings.canvasHeight);
     this.events.dispatch(EventType.PointsCleared);
 
-    this._context.clearRect(0, 0, this.controlData.settings.canvasWidth, this.controlData.settings.canvasHeight);
+    this.drawPersistenceLine();
 
-    this.drawLine();
-
-    if (this.controlData.settings.enableTicks) {
-      this.drawAxes();
-    }
 
     const promises: Promise<void>[] = [];
 
     chunks.forEach((pointArray, i) => {
       console.debug(`Drawing point chunk ${i + 1} / ${chunks.length}`);
-      promises.push(this.drawPoints(pointArray));
+      promises.push(this.drawPoints(pointArray, i));
     });
 
     const promiseAll = Promise.all(promises);
@@ -147,19 +151,23 @@ export default class Renderer extends AbstractControlModule implements IRenderer
 
   /**
    * Timeout promise used to delay chunk drawing
+   * @returns {Promise<void>}
+   * @private
    */
-  private waitFor = () => new Promise((r) => setTimeout(r, this.controlData.settings.waitTime));
+  private waitFor = (time: number): Promise<void> => new Promise((r) => setTimeout(r, time));
 
   /**
    * Asynchronously draws points on the context
    * @param points {PersistencePointTuple[]}
+   * @param i {number} Current chunk index
    * @returns {Promise<void>}
+   * @throws {Error} If canvas context is undefined
    * @private
    */
-  private async drawPoints(points: PersistencePointTuple[]): Promise<void> {
-    await this.waitFor();
+  private async drawPoints(points: PersistencePointTuple[], i: number): Promise<void> {
+    await this.waitFor(this.controlData.settings.waitTime * i);
 
-    points.forEach((point) => {
+    points.forEach((point:PersistencePointTuple) => {
       if (typeof this._context === 'undefined') {
         throw new Error('Canvas Context is undefined');
       }
@@ -183,12 +191,12 @@ export default class Renderer extends AbstractControlModule implements IRenderer
   /**
    * Draws the persistence line from min to max
    * @returns void
+   * @throws {Error} If point data is empty or context is undefined
    * @private
    */
-  private drawLine() {
+  private drawPersistenceLine(): void {
     if (this.pointData.points.length === 0 || typeof this._context === 'undefined') {
-      console.error('Can\'t draw persistence line without points.');
-      return;
+      throw new Error('Can\'t draw persistence line without points.');
     }
 
     const first = this.pointData.points[0];
@@ -206,115 +214,36 @@ export default class Renderer extends AbstractControlModule implements IRenderer
     this.getContext().stroke();
   }
 
-  private drawAxes() {
-    this.getContext().beginPath();
-    this.getContext().moveTo(
-      this.xPos(0),
-      this.yPos(this.pointData.yMax()),
-    );
-    this.getContext().lineTo(
-      this.xPos(0),
-      this.yPos(0),
-    );
-    this.getContext().moveTo(
-      this.xPos(0),
-      this.yPos(0),
-    );
-    this.getContext().lineTo(
-      this.xPos(this.pointData.xMax()),
-      this.yPos(0),
-    );
-    this.getContext().stroke();
-
-    this.getContext().fillStyle = this.controlData.settings.strokeStyle;
-
-    this.getContext().fillText(
-      this.pointData.xMin().toFixed(2),
-      this.xPos(0),
-      this.yPos(0) + this.controlData.settings.padding,
-    );
-
-    this.getContext().fillText(
-      this.pointData.xMax().toFixed(2),
-      this.xPos(this.pointData.xMax()),
-      this.yPos(0) + this.controlData.settings.padding,
-    );
-
-    this.getContext().fillText(
-      this.pointData.yMin().toFixed(2),
-      this.xPos(0) - this.controlData.settings.padding,
-      this.yPos(0),
-    );
-
-    this.getContext().fillText(
-      this.pointData.yMax().toFixed(2),
-      this.xPos(0) - this.controlData.settings.padding,
-      this.yPos(this.pointData.yMax()),
-    );
-
-    this.getContext().textAlign = 'center';
-    this.getContext().textBaseline = 'bottom';
-
-    for (let i = 1; i < 5; i += 1) {
-      const valX = ((this.pointData.xMax() - this.pointData.xMin()) / 5) * i;
-      const valY = ((this.pointData.yMax() - this.pointData.yMin()) / 5) * i;
-
-
-      this.getContext().beginPath();
-      this.getContext().moveTo(this.xPos(valX), this.yPos(0));
-      this.getContext().lineTo(this.xPos(valX), this.yPos(0) + 5);
-      this.getContext().stroke();
-
-      this.getContext().beginPath();
-      this.getContext().moveTo(this.xPos(0), this.yPos(valY));
-      this.getContext().lineTo(this.xPos(0) - 5, this.yPos(valY));
-      this.getContext().stroke();
-
-      this.getContext().fillText(
-        valX.toFixed(2),
-        this.xPos(valX),
-        this.yPos(0) + this.controlData.settings.padding,
-      );
-
-      this.getContext().fillText(
-        valY.toFixed(2),
-        this.xPos(0) - this.controlData.settings.padding,
-        this.yPos(valY),
-      );
-    }
-
-    this.getContext().fill();
-  }
 
   /**
    * Axis x-range start
    * @returns {number}
    */
-  private get rangeXMin() {
-    return this.controlData.settings.padding;
+  private get rangeXMin(): number {
+    return this.controlData.settings.getPadding('left');
   }
 
   /**
    * Axis x-range end
    * @returns {number}
    */
-  private get rangeXMax() {
-    return this.controlData.settings.canvasWidth - this.controlData.settings.padding;
+  private get rangeXMax(): number {
+    return this.controlData.settings.canvasWidth - this.controlData.settings.getPadding('right');
   }
 
   /**
    * Axis y-range start
    * @returns {number}
    */
-  private get rangeYMin() {
-    return this.controlData.settings.canvasHeight - this.controlData.settings.padding;
+  private get rangeYMin(): number {
+    return this.controlData.settings.canvasHeight - this.controlData.settings.getPadding('bottom');
   }
 
   /**
    * Axis y-range end
    * @returns {number}
    */
-  private get rangeYMax() {
-    return this.controlData.settings.padding;
+  private get rangeYMax(): number {
+    return this.controlData.settings.getPadding('top');
   }
 }
