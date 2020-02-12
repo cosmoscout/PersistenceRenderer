@@ -64,8 +64,8 @@ export default class PersistenceControl extends AbstractControl {
     noUiSlider.create(<HTMLElement>element, {
       start: [data.persistenceBounds.min, data.persistenceBounds.max],
       snap: false,
-      animate: false,
       connect: true,
+      tooltips: true,
       range: <{}>data.persistenceBounds,
     });
     this.events.dispatch(EventType.SliderCreated);
