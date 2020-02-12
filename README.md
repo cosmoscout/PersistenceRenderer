@@ -53,28 +53,28 @@ class Bounds {
 Default settings:
 ```json
 {
-  padding: {
-    left: 20,
-    top: 10,
-    right: 10,
-    bottom: 20,
+  "padding": {
+    "left": 20,
+    "top": 10,
+    "right": 10,
+    "bottom": 20
   },
 
-  canvasWidth: 500,
-  canvasHeight: 500,
-  strokeStyle: '#000',
-  fillStyle: '#000',
+  "canvasWidth": 500,
+  "canvasHeight": 500,
+  "strokeStyle": "#000",
+  "fillStyle": "#000",
 
-  pointDrawFunction: undefined,
+  "pointDrawFunction": "undefined",
 
-  enableSelectionFilter: false,
-  enablePersistenceFilter: false,
-  enableAxes: true,
+  "enableSelectionFilter": false,
+  "enablePersistenceFilter": false,
+  "enableAxes": true,
 
-  axesTickCount: 5,
-  axesTickLength: 5,
-  axesColor: '#000',
-  axesTickColor: '#000',
+  "axesTickCount": 5,
+  "axesTickLength": 5,
+  "axesColor": "#000",
+  "axesTickColor": "#000"
 }
 ```
 `padding: number | Padding`: Padding of the canvas  
