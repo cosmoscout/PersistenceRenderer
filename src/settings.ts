@@ -40,7 +40,7 @@ export interface ISettings {
    * @param type {string|undefined} left / top / right / bottom
    * @throws {Error} If key does not exist on padding
    */
-  getPadding(type: string): number;
+  getPadding(type?: string): number;
 }
 
 export type Padding = {
