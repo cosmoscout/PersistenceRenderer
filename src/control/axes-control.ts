@@ -66,10 +66,16 @@ export default class AxesControl extends AbstractControl {
    * @param data {IPointData}
    */
   public update(data: IPointData): any {
+    this.context.save();
+    this.context.strokeStyle = this.controlData.settings.axesColor;
+    this.context.fillStyle = this.controlData.settings.axesTickColor;
+
     this.pointData = data;
     this.drawContainingLines();
     this.xAxisTicks();
     this.yAxisTicks();
+
+    this.context.restore();
   }
 
   /**
