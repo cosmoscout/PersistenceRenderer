@@ -20,8 +20,8 @@ export interface ISettings {
     readonly chunks: number;
     readonly waitTime: number;
     readonly pointDrawFunction: pointDrawFunction | undefined;
-    readonly enableSelection: boolean;
-    readonly enableSlider: boolean;
+    readonly enableSelectionFilter: boolean;
+    readonly enablePersistenceFilter: boolean;
     readonly enableAxes: boolean;
     readonly axesTickCount: number | number[];
     readonly axesTickLength: number | number[];
