@@ -10,6 +10,8 @@
  *
  * @type {ISettings}
  */
+import {pointDrawFunction} from "./control/renderer-interface";
+
 export interface ISettings {
   readonly padding: number | Padding;
 
@@ -20,6 +22,7 @@ export interface ISettings {
 
   readonly chunks: number;
   readonly waitTime: number;
+  readonly pointDrawFunction: pointDrawFunction | undefined;
 
   readonly enableSelection: boolean;
   readonly enableSlider: boolean;
@@ -27,6 +30,8 @@ export interface ISettings {
 
   readonly axesTickCount: number | number[];
   readonly axesTickLength: number | number[];
+  readonly axesColor: string;
+  readonly axesTickColor: string;
 
   /**
    * Accessor for settings padding
@@ -61,6 +66,7 @@ export const DefaultSettings: ISettings = {
 
   chunks: 100,
   waitTime: 5,
+  pointDrawFunction: undefined,
 
   enableSelection: true,
   enableSlider: true,
@@ -68,6 +74,8 @@ export const DefaultSettings: ISettings = {
 
   axesTickCount: 5,
   axesTickLength: 5,
+  axesColor: '#000',
+  axesTickColor: '#000',
 
   getPadding(pos: string = 'left'): number {
     const { padding } = this;
