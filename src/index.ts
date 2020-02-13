@@ -18,7 +18,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
    * @type {Element}
    * @private
    */
-  private readonly container: Element;
+  public readonly container: HTMLElement;
 
   /**
    * ID added to canvas, slider and selection rect
@@ -83,7 +83,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
         throw new Error(`Element with query selector ${container} not found.`);
       }
 
-      this.container = element;
+      this.container = <HTMLElement>element;
     } else if (container instanceof HTMLElement) {
       this.container = container;
     } else {

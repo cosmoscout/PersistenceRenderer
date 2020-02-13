@@ -7,4 +7,5 @@ export interface IControlData {
   readonly events: EventDispatcher;
   readonly settings: ISettings;
   readonly renderer: IRenderer;
+  readonly container: HTMLElement;
 }

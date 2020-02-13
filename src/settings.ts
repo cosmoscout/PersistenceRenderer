@@ -39,6 +39,9 @@ export interface ISettings {
   readonly axesTickFormatter?: TickFormatter;
   readonly axesTextColor: string;
 
+  readonly selectionStopPropagation: boolean;
+  readonly selectionMinWidth: number;
+
   /**
    * Accessor for settings padding
    * If pos is undefined padding.left or padding will be returned
@@ -83,6 +86,9 @@ export const DefaultSettings: ISettings = {
   axesTickColor: '#000',
   axesTickFractions: 2,
   axesTextColor: '#000',
+
+  selectionStopPropagation: false,
+  selectionMinWidth: 10,
 
   getPadding(pos: string = 'left'): number {
     const { padding } = this;
