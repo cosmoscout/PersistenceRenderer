@@ -11,7 +11,7 @@ export default class PersistenceRenderer implements IPointData, IControlData {
      * @type {Element}
      * @private
      */
-    private readonly container;
+    readonly container: HTMLElement;
     /**
      * ID added to canvas, slider and selection rect
      * @type {string}

@@ -11,22 +11,29 @@
  * @type {ISettings}
  */
 import { pointDrawFunction } from './control/renderer-interface';
+export declare type TickFormatter = {
+    (tickValue: number): string;
+};
 export interface ISettings {
     readonly padding: number | Padding;
     readonly canvasWidth: number;
     readonly canvasHeight: number;
     readonly strokeStyle: string;
-    readonly fillStyle: string;
     readonly chunks: number;
     readonly waitTime: number;
-    readonly pointDrawFunction: pointDrawFunction | undefined;
+    readonly pointDrawFunction?: pointDrawFunction | undefined;
     readonly enableSelectionFilter: boolean;
     readonly enablePersistenceFilter: boolean;
     readonly enableAxes: boolean;
+    readonly axesColor: string;
     readonly axesTickCount: number | number[];
     readonly axesTickLength: number | number[];
-    readonly axesColor: string;
     readonly axesTickColor: string;
+    readonly axesTickFractions: number;
+    readonly axesTickFormatter?: TickFormatter;
+    readonly axesTextColor: string;
+    readonly selectionStopPropagation: boolean;
+    readonly selectionMinWidth: number;
     /**
      * Accessor for settings padding
      * If pos is undefined padding.left or padding will be returned
