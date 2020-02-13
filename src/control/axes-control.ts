@@ -54,11 +54,11 @@ export default class AxesControl extends AbstractControl {
 
     this.context.moveTo(
       this.renderer.xPos(0),
-      this.renderer.yPos(0) - 1,
+      this.renderer.yPos(0),
     );
     this.context.lineTo(
       this.renderer.xPos(this.pointData.xMax()),
-      this.renderer.yPos(0) - 1,
+      this.renderer.yPos(0),
     );
     this.context.stroke();
   }
