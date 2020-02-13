@@ -1,7 +1,7 @@
 {
   "name": "persistence-renderer",
-  "version": "0.0.0",
-  "description": "Visualize VTK.js persistence points on a canvas.",
+  "version": "1.0.0",
+  "description": "Visualize and interact with VTK.js persistence data.",
   "scripts": {
     "type-check": "tsc --noEmit",
     "type-check:watch": "npm run type-check -- --watch",
