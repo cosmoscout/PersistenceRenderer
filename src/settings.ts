@@ -12,26 +12,32 @@
  */
 import { pointDrawFunction } from './control/renderer-interface';
 
+export type TickFormatter = {
+  (tickValue: number): string;
+};
+
 export interface ISettings {
   readonly padding: number | Padding;
 
   readonly canvasWidth: number;
   readonly canvasHeight: number;
   readonly strokeStyle: string;
-  readonly fillStyle: string;
 
   readonly chunks: number;
   readonly waitTime: number;
-  readonly pointDrawFunction: pointDrawFunction | undefined;
+  readonly pointDrawFunction?: pointDrawFunction | undefined;
 
   readonly enableSelectionFilter: boolean;
   readonly enablePersistenceFilter: boolean;
   readonly enableAxes: boolean;
 
+  readonly axesColor: string;
   readonly axesTickCount: number | number[];
   readonly axesTickLength: number | number[];
-  readonly axesColor: string;
   readonly axesTickColor: string;
+  readonly axesTickFractions: number;
+  readonly axesTickFormatter?: TickFormatter;
+  readonly axesTextColor: string;
 
   /**
    * Accessor for settings padding
@@ -53,7 +59,7 @@ export type Padding = {
 
 export const DefaultSettings: ISettings = {
   padding: {
-    left: 20,
+    left: 40,
     top: 10,
     right: 10,
     bottom: 20,
@@ -62,7 +68,6 @@ export const DefaultSettings: ISettings = {
   canvasWidth: 500,
   canvasHeight: 500,
   strokeStyle: '#000',
-  fillStyle: '#000',
 
   chunks: 100,
   waitTime: 5,
@@ -72,10 +77,12 @@ export const DefaultSettings: ISettings = {
   enablePersistenceFilter: false,
   enableAxes: true,
 
+  axesColor: '#000',
   axesTickCount: 5,
   axesTickLength: 5,
-  axesColor: '#000',
   axesTickColor: '#000',
+  axesTickFractions: 2,
+  axesTextColor: '#000',
 
   getPadding(pos: string = 'left'): number {
     const { padding } = this;

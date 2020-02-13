@@ -126,7 +126,6 @@ export default class Renderer extends AbstractControl implements IRenderer {
 
     const context = <CanvasRenderingContext2D>canvas.getContext('2d');
     context.strokeStyle = this.controlData.settings.strokeStyle;
-    context.fillStyle = this.controlData.settings.fillStyle;
 
     this.element = canvas;
     this._context = context;

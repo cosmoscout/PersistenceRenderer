@@ -40,6 +40,8 @@ export default class AxesControl extends AbstractControl {
    * Draws the x-/y-Axes without ticks
    */
   private drawContainingLines(): void {
+    this.context.strokeStyle = this.controlData.settings.axesColor;
+
     this.context.beginPath();
     this.context.moveTo(
       this.renderer.xPos(0),
@@ -67,11 +69,15 @@ export default class AxesControl extends AbstractControl {
    */
   public update(data: IPointData): any {
     this.context.save();
-    this.context.strokeStyle = this.controlData.settings.axesColor;
-    this.context.fillStyle = this.controlData.settings.axesTickColor;
+
+    this.context.fillStyle = this.controlData.settings.axesTextColor;
 
     this.pointData = data;
+
     this.drawContainingLines();
+
+    this.context.strokeStyle = this.controlData.settings.axesTickColor;
+
     this.xAxisTicks();
     this.yAxisTicks();
 
@@ -93,7 +99,11 @@ export default class AxesControl extends AbstractControl {
 
     for (let i = 0; i <= tickCount; i += 1) {
       const valX = ((this.pointData.xMax() - this.pointData.xMin()) / tickCount) * i;
-      const stringX = valX.toFixed(2);
+
+      let stringX = valX.toFixed(this.controlData.settings.axesTickFractions);
+      if (typeof this.controlData.settings.axesTickFormatter === 'function') {
+        stringX = this.controlData.settings.axesTickFormatter(valX);
+      }
 
       const measure = this.context.measureText(stringX);
 
@@ -133,7 +143,11 @@ export default class AxesControl extends AbstractControl {
 
     for (let i = 0; i <= tickCount; i += 1) {
       const valY = ((this.pointData.yMax() - this.pointData.yMin()) / tickCount) * i;
-      const stringY = valY.toFixed(2);
+
+      let stringY = valY.toFixed(this.controlData.settings.axesTickFractions);
+      if (typeof this.controlData.settings.axesTickFormatter === 'function') {
+        stringY = this.controlData.settings.axesTickFormatter(valY);
+      }
 
       const measure = this.context.measureText(stringY);
 
@@ -149,7 +163,7 @@ export default class AxesControl extends AbstractControl {
 
       this.context.fillText(
         stringY,
-        this.renderer.xPos(0) - tickLength - measure.width - 4,
+        this.renderer.xPos(0) - tickLength - measure.width - 2,
         this.renderer.yPos(valY),
       );
 

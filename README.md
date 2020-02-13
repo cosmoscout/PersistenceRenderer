@@ -54,7 +54,7 @@ Default settings:
 ```json
 {
   "padding": {
-    "left": 20,
+    "left": 40,
     "top": 10,
     "right": 10,
     "bottom": 20
@@ -63,7 +63,6 @@ Default settings:
   "canvasWidth": 500,
   "canvasHeight": 500,
   "strokeStyle": "#000",
-  "fillStyle": "#000",
 
   "pointDrawFunction": "undefined",
 
@@ -71,10 +70,12 @@ Default settings:
   "enablePersistenceFilter": false,
   "enableAxes": true,
 
+  "axesColor": "#000",
   "axesTickCount": 5,
   "axesTickLength": 5,
-  "axesColor": "#000",
-  "axesTickColor": "#000"
+  "axesTickColor": "#000",
+  "axesTickFractions": 2,
+  "axesTextColor": "#000"
 }
 ```
 `padding: number | Padding`: Padding of the canvas  
@@ -82,7 +83,6 @@ Default settings:
 `canvasWidth: number`: Canvas width in px  
 `canvasHeight: number`: Canvas height in px  
 `strokeStyle: string`: Stroke color   
-`fillStyle: string`: Fill color  
 
 `pointDrawFunction: Function`: Custom function for drawing persistence points on the canvas
 
@@ -90,10 +90,12 @@ Default settings:
 `enablePersistenceFilter: bool`: Enable / Disable Slider control element 
 `enableAxes: bool`: Enable / Disable Axes drawn on the canvas 
 
+`axesColor: string`: Color of the axes  
 `axesTickCount: number | number[]`: Number of ticks on the x/y axis. If argument is an array first index corresponds to number of x-axis ticks  
 `axesTickLength: number`: Length of ticks in px. If argument is an array first index corresponds to the length of x-axis ticks  
-`axesColor: string`: Color of the axes  
 `axesTickColor: string`: Color of ticks  
+`axesTickFractions: number`: Number of fractions on each tick value  
+`axesTextColor: string`: Color of tick values  
 
 ### `pointDrawFunction(point: PersistencePointTuple, renderer: IRenderer)`
 A custom draw function can be passed to the rendering instance to change / extend the way points are drawn.  
@@ -101,6 +103,11 @@ The function gets two arguments:
 * `point: PersistencePointTuple` the current point to draw
 * `renderer: IRenderer` the current rendering instance
 See the example section for further information.
+
+### `axesTickFormatter(tickValue: number): string`
+A custom tick formatting function. Gets called for each tick value.  
+Must return a string.  
+Default: `return value.toFixed(2);`
 
 ## `PersistencePointTuple`
 ```typescript
