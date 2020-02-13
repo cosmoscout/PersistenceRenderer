@@ -75,7 +75,10 @@ Default settings:
   "axesTickLength": 5,
   "axesTickColor": "#000",
   "axesTickFractions": 2,
-  "axesTextColor": "#000"
+  "axesTextColor": "#000",
+
+  "selectionStopPropagation": false,
+  "selectionMinWidth": 10
 }
 ```
 `padding: number | Padding`: Padding of the canvas  
@@ -96,6 +99,9 @@ Default settings:
 `axesTickColor: string`: Color of ticks  
 `axesTickFractions: number`: Number of fractions on each tick value  
 `axesTextColor: string`: Color of tick values  
+
+`selectionStopPropagation: boolean`: Set to true, to stop the mouse down event propagation  
+`selectionMinWidth: number`: Min width in px that counts as a selection  
 
 ### `pointDrawFunction(point: PersistencePointTuple, renderer: IRenderer)`
 A custom draw function can be passed to the rendering instance to change / extend the way points are drawn.  
@@ -188,6 +194,7 @@ Updating the slider handles will automatically re-draw the canvas with the newly
 
 ## Selection Filter
 The selection filter allows to select an arbitrary sized rectangle on the canvas. After the selection has ended only points inside the selection will be drawn.  
+The current selection can be cleared by right-clicking on the canvas.
 
 ## Events
 TBD.
