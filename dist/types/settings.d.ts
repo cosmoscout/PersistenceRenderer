@@ -12,7 +12,7 @@
  */
 import { pointDrawFunction } from './control/renderer-interface';
 export declare type TickFormatter = {
-    (tickValue: number): string;
+    (tickValue: number, prevTickValue: number): string;
 };
 export interface ISettings {
     readonly padding: number | Padding;

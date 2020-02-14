@@ -128,11 +128,13 @@ export default class PersistenceRenderer implements IPointData, IControlData {
      * @returns {number}
      */
     xMin(): number;
+    xMinFiltered(): number;
     /**
      * Bounds x-max
      * @returns {number}
      */
     xMax(): number;
+    xMaxFiltered(): number;
     /**
      * Bounds y-min
      * @returns {number}
