@@ -213,7 +213,7 @@ export default class SelectionControl extends AbstractControl {
       const distribution = (value - inMin) * (outMax - outMin);
       const range = (inMax - inMin);
 
-      return distribution * range + outMin;
+      return distribution / range + outMin;
     };
 
     const endVal = this.element.getBoundingClientRect().left
