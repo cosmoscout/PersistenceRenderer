@@ -1,6 +1,6 @@
 {
   "name": "persistence-renderer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Visualize and interact with VTK.js persistence data.",
   "scripts": {
     "type-check": "tsc --noEmit",
