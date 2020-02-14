@@ -5,6 +5,6 @@ export default class Bounds {
     readonly min: number;
     readonly max: number;
     readonly width: number;
-    constructor(min: number, max: number);
+    constructor(min: number, max: number, width?: number);
     equals(other: Bounds): boolean;
 }

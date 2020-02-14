@@ -41,10 +41,12 @@ export interface IPointData {
      * Bounds x-min
      */
     xMin(): number;
+    xMinFiltered(): number;
     /**
      * Bounds x-max
      */
     xMax(): number;
+    xMaxFiltered(): number;
     /**
      * Bounds y-min
      */
