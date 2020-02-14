@@ -48,12 +48,12 @@ export default class AxesControl extends AbstractControl {
       this.renderer.yPos(this.pointData.yMax()),
     );
     this.context.lineTo(
-        this.controlData.settings.getPadding('left'),
+      this.controlData.settings.getPadding('left'),
       this.renderer.yPos(0),
     );
 
     this.context.moveTo(
-        this.controlData.settings.getPadding('left'),
+      this.controlData.settings.getPadding('left'),
       this.renderer.yPos(0),
     );
     this.context.lineTo(
@@ -103,43 +103,45 @@ export default class AxesControl extends AbstractControl {
     const partition = diff / tickCount;
 
     for (let i = 0; i <= tickCount; i += 1) {
-      let valX = ((partition) * i)+low;
+      let valX = ((partition) * i) + low;
 
       let stringX = valX.toFixed(this.controlData.settings.axesTickFractions);
       if (typeof this.controlData.settings.axesTickFormatter === 'function') {
-        stringX = this.controlData.settings.axesTickFormatter(valX, Math.max(0, ((partition) * i-1)+low));
+        stringX = this.controlData.settings.axesTickFormatter(valX, Math.max(0, ((partition) * i - 1) + low));
       }
 
       const measure = this.context.measureText(stringX);
 
 
+      const map = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) => {
+        const distribution = (value - inMin) * (outMax - outMin);
+        const range = (inMax - inMin);
 
-      const map = (value: number, x1: number, y1: number, x2: number, y2: number) => (value - x1) * (y2 - x2) / (y1 - x1) + x2;
-let t = valX;
+        return distribution * range + outMin;
+      };
+
       valX = map(
-          valX,
-          this.pointData.xMinFiltered(),
-          this.pointData.xMaxFiltered(),
-          this.controlData.settings.getPadding('left'),
-          this.controlData.settings.canvasWidth - this.controlData.settings.getPadding('right')
+        valX,
+        this.pointData.xMinFiltered(),
+        this.pointData.xMaxFiltered(),
+        this.controlData.settings.getPadding('left'),
+        this.controlData.settings.canvasWidth - this.controlData.settings.getPadding('right'),
       );
-
-      console.log(`X-Pos for ${t}: ${(valX)}`, this.pointData.xMinFiltered(), this.pointData.xMaxFiltered());
 
       this.context.beginPath();
       this.context.moveTo(
-          valX,
+        valX,
         this.controlData.settings.canvasHeight - this.controlData.settings.getPadding('bottom'),
       );
       this.context.lineTo(
-          valX,
-          this.controlData.settings.canvasHeight - this.controlData.settings.getPadding('bottom') + tickLength,
+        valX,
+        this.controlData.settings.canvasHeight - this.controlData.settings.getPadding('bottom') + tickLength,
       );
 
       this.context.fillText(
         stringX,
-          valX - measure.width / 2,
-          this.controlData.settings.canvasHeight - this.controlData.settings.getPadding('bottom') + tickLength + 8,
+        valX - measure.width / 2,
+        this.controlData.settings.canvasHeight - this.controlData.settings.getPadding('bottom') + tickLength + 8,
       );
 
       this.context.stroke();
@@ -172,17 +174,17 @@ let t = valX;
 
       this.context.beginPath();
       this.context.moveTo(
-          this.controlData.settings.getPadding('left'),
+        this.controlData.settings.getPadding('left'),
         this.renderer.yPos(valY),
       );
       this.context.lineTo(
-          this.controlData.settings.getPadding('left') - tickLength,
+        this.controlData.settings.getPadding('left') - tickLength,
         this.renderer.yPos(valY),
       );
 
       this.context.fillText(
         stringY,
-          this.controlData.settings.getPadding('left') - tickLength - measure.width - 2,
+        this.controlData.settings.getPadding('left') - tickLength - measure.width - 2,
         this.renderer.yPos(valY),
       );
 
