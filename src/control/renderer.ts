@@ -73,7 +73,7 @@ export default class Renderer extends AbstractControl implements IRenderer {
    * @returns {number} Mapped point
    */
   public xPos(x: number): number {
-    const distribution = (x - this.pointData.xMin()) / (this.pointData.xMax() - this.pointData.xMin());
+    const distribution = (x - this.pointData.xMinFiltered()) / (this.pointData.xMaxFiltered() - this.pointData.xMinFiltered());
     const range = (this.rangeXMax - this.rangeXMin);
 
     return (distribution * range) + this.rangeXMin;
@@ -204,8 +204,10 @@ export default class Renderer extends AbstractControl implements IRenderer {
       throw new Error('Can\'t draw persistence line without points.');
     }
 
-    const first = this.pointData.points[0];
-    const last = this.pointData.points[this.pointData.points.length - 1];
+    const filtered = this.pointData.filteredPoints();
+
+    const first = filtered[0];
+    const last = filtered[filtered.length - 1];
 
     this.getContext().beginPath();
     this.getContext().moveTo(

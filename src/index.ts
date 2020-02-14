@@ -270,12 +270,28 @@ export default class PersistenceRenderer implements IPointData, IControlData {
     return this.bounds[0];
   }
 
+  public xMinFiltered(): number {
+    if (this.activeSelectionBounds.min !== Number.NEGATIVE_INFINITY) {
+      return this.activeSelectionBounds.min;
+    }
+
+    return this.xMin();
+  }
+
   /**
    * Bounds x-max
    * @returns {number}
    */
   public xMax() {
     return this.bounds[1];
+  }
+
+  public xMaxFiltered(): number {
+    if (this.activeSelectionBounds.min !== Number.NEGATIVE_INFINITY) {
+      return this.activeSelectionBounds.max;
+    }
+
+    return this.xMax();
   }
 
   /**
@@ -356,8 +372,8 @@ export default class PersistenceRenderer implements IPointData, IControlData {
       return points;
     }
 
-    return points.filter((point) => (<Renderer> this._renderer).xPos(point.lower.x) >= this.activeSelectionBounds.min
-        && (<Renderer> this._renderer).xPos(point.lower.x) <= this.activeSelectionBounds.max);
+    return points.filter((point) => (point.lower.x) >= this.activeSelectionBounds.min
+        && (point.lower.x) <= this.activeSelectionBounds.max);
   }
 
   /**

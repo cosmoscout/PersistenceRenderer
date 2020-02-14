@@ -204,14 +204,56 @@ export default class SelectionControl extends AbstractControl {
       return;
     }
 
-    const start = Math.max(
-      0,
-      this.element.getBoundingClientRect().left - this.canvas.getBoundingClientRect().left,
+    const sDiff = this.element.getBoundingClientRect().left - this.canvas.getBoundingClientRect().left;
+
+    let start = Math.max(
+        this.controlData.settings.getPadding('left'),
+      sDiff,
+    );
+
+    const map = (value: number, x1: number, y1: number, x2: number, y2: number) => (value - x1) * (y2 - x2) / (y1 - x1) + x2;
+
+    const endVal = this.element.getBoundingClientRect().left -
+        this.canvas.getBoundingClientRect().left +
+        this.element.getBoundingClientRect().width;
+
+    let end = Math.max(
+        0,
+        Math.min(
+        endVal,
+        this.controlData.settings.canvasWidth - this.controlData.settings.getPadding('right')
+    ));
+
+    const width = end - start;
+
+    const xLower = (this.pointData.activeSelectionBounds.min !== Number.NEGATIVE_INFINITY) ?
+        this.pointData.activeSelectionBounds.min :
+        this.pointData.bounds[0];
+
+    const xUpper = (this.pointData.activeSelectionBounds.min !== Number.NEGATIVE_INFINITY) ?
+        this.pointData.activeSelectionBounds.max :
+        this.pointData.bounds[1];
+
+    start = map(
+        start,
+        this.controlData.settings.getPadding('left'),
+        this.controlData.settings.canvasWidth - this.controlData.settings.getPadding('right'),
+        xLower,
+        xUpper
+    );
+
+    end = map(
+        end,
+        this.controlData.settings.getPadding('left'),
+        this.controlData.settings.canvasWidth - this.controlData.settings.getPadding('right'),
+        xLower,
+        xUpper
     );
 
     this.selectionBounds = new Bounds(
-      start,
-      start + this.element.getBoundingClientRect().width,
+        start,
+      end,
+      width
     );
   }
 }

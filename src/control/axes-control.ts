@@ -44,20 +44,20 @@ export default class AxesControl extends AbstractControl {
 
     this.context.beginPath();
     this.context.moveTo(
-      this.renderer.xPos(0),
+      this.controlData.settings.getPadding('left'),
       this.renderer.yPos(this.pointData.yMax()),
     );
     this.context.lineTo(
-      this.renderer.xPos(0),
+        this.controlData.settings.getPadding('left'),
       this.renderer.yPos(0),
     );
 
     this.context.moveTo(
-      this.renderer.xPos(0),
+        this.controlData.settings.getPadding('left'),
       this.renderer.yPos(0),
     );
     this.context.lineTo(
-      this.renderer.xPos(this.pointData.xMax()),
+      this.renderer.xPos(this.pointData.xMaxFiltered()),
       this.renderer.yPos(0),
     );
     this.context.stroke();
@@ -97,30 +97,49 @@ export default class AxesControl extends AbstractControl {
       ? this.controlData.settings.axesTickLength
       : this.controlData.settings.axesTickLength[0];
 
+    const low = this.pointData.xMinFiltered();
+    const high = this.pointData.xMaxFiltered();
+    const diff = high - low;
+    const partition = diff / tickCount;
+
     for (let i = 0; i <= tickCount; i += 1) {
-      const valX = ((this.pointData.xMax() - this.pointData.xMin()) / tickCount) * i;
+      let valX = ((partition) * i)+low;
 
       let stringX = valX.toFixed(this.controlData.settings.axesTickFractions);
       if (typeof this.controlData.settings.axesTickFormatter === 'function') {
-        stringX = this.controlData.settings.axesTickFormatter(valX);
+        stringX = this.controlData.settings.axesTickFormatter(valX, Math.max(0, ((partition) * i-1)+low));
       }
 
       const measure = this.context.measureText(stringX);
 
+
+
+      const map = (value: number, x1: number, y1: number, x2: number, y2: number) => (value - x1) * (y2 - x2) / (y1 - x1) + x2;
+let t = valX;
+      valX = map(
+          valX,
+          this.pointData.xMinFiltered(),
+          this.pointData.xMaxFiltered(),
+          this.controlData.settings.getPadding('left'),
+          this.controlData.settings.canvasWidth - this.controlData.settings.getPadding('right')
+      );
+
+      console.log(`X-Pos for ${t}: ${(valX)}`, this.pointData.xMinFiltered(), this.pointData.xMaxFiltered());
+
       this.context.beginPath();
       this.context.moveTo(
-        this.renderer.xPos(valX),
-        this.renderer.yPos(0),
+          valX,
+        this.controlData.settings.canvasHeight - this.controlData.settings.getPadding('bottom'),
       );
       this.context.lineTo(
-        this.renderer.xPos(valX),
-        this.renderer.yPos(0) + tickLength,
+          valX,
+          this.controlData.settings.canvasHeight - this.controlData.settings.getPadding('bottom') + tickLength,
       );
 
       this.context.fillText(
         stringX,
-        this.renderer.xPos(valX) - measure.width / 2,
-        this.renderer.yPos(0) + tickLength + 8,
+          valX - measure.width / 2,
+          this.controlData.settings.canvasHeight - this.controlData.settings.getPadding('bottom') + tickLength + 8,
       );
 
       this.context.stroke();
@@ -146,24 +165,24 @@ export default class AxesControl extends AbstractControl {
 
       let stringY = valY.toFixed(this.controlData.settings.axesTickFractions);
       if (typeof this.controlData.settings.axesTickFormatter === 'function') {
-        stringY = this.controlData.settings.axesTickFormatter(valY);
+        stringY = this.controlData.settings.axesTickFormatter(valY, 0);
       }
 
       const measure = this.context.measureText(stringY);
 
       this.context.beginPath();
       this.context.moveTo(
-        this.renderer.xPos(0),
+          this.controlData.settings.getPadding('left'),
         this.renderer.yPos(valY),
       );
       this.context.lineTo(
-        this.renderer.xPos(0) - tickLength,
+          this.controlData.settings.getPadding('left') - tickLength,
         this.renderer.yPos(valY),
       );
 
       this.context.fillText(
         stringY,
-        this.renderer.xPos(0) - tickLength - measure.width - 2,
+          this.controlData.settings.getPadding('left') - tickLength - measure.width - 2,
         this.renderer.yPos(valY),
       );
 
