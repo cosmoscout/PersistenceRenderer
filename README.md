@@ -110,7 +110,7 @@ The function gets two arguments:
 * `renderer: IRenderer` the current rendering instance
 See the example section for further information.
 
-### `axesTickFormatter(tickValue: number): string`
+### `axesTickFormatter(tickValue: number,prevTickValue: number): string`
 A custom tick formatting function. Gets called for each tick value.  
 Must return a string.  
 Default: `return value.toFixed(2);`
@@ -197,7 +197,42 @@ The selection filter allows to select an arbitrary sized rectangle on the canvas
 The current selection can be cleared by right-clicking on the canvas.
 
 ## Events
-TBD.
+Events are dispatched onto the container element set in the constructor.  
+The following events can be listened to:  
+
+### VTK file loader
+* vtkdataloaded: VTK File has been fully loaded and processed
+
+### Selection control
+* selectionstart: Selection started
+* selectionupdating: Selection size is changing
+* selectionupdating: Selection has been cleared
+* selectionend: Selection has ended
+  * Event detail field contains selection bounds
+
+### Persistence control
+* sliderdestroyed: Persistence bounds slider has been destroyed (happens upon loading a new vtk file)
+* slidercreated: Slider has been created (after new vtk file load)
+* persistenceboundsupdating: Slider handles are changing
+  * Event detail field contains handle values
+* persistenceboundsset: Slider values set
+  * Event detail field contains handle values
+
+### Renderer
+* pointsdrawn: All vtk points drawn
+* pointscleared: Canvas cleared before re-draw
+
+### Example
+Listening to selection end:
+```javascript
+const renderer = new PersistenceRenderer(document.body, 'unique_id', {
+    enableSelectionFilter: true
+});
+
+renderer.container.addEventListener('selectionend', (event /* CustomEvent */) => {
+    console.log(`Selection Bounds are: ${event.detail}`);
+});
+```
 
 ## Examples
 Minimum needed dependencies:
