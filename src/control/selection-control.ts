@@ -1,6 +1,6 @@
 import AbstractControl from './abstract-control';
 import Bounds from '../bounds';
-import { EventType } from '../event-dispatcher';
+import {EventType} from '../event-dispatcher';
 
 /**
  * Selection rect for selecting part of points on canvas
@@ -183,7 +183,7 @@ export default class SelectionControl extends AbstractControl {
     }
 
     this.pointData.setActiveSelectionBounds(this.selectionBounds);
-    this.events.dispatch(EventType.SelectionEnd);
+    this.events.dispatch(EventType.SelectionEnd, this.selectionBounds);
   }
 
   /**
@@ -193,6 +193,7 @@ export default class SelectionControl extends AbstractControl {
   private clearSelection(event: MouseEvent): void {
     event.preventDefault();
     this.pointData.setActiveSelectionBounds(undefined);
+    this.events.dispatch(EventType.SelectionCleared);
   }
 
   /**
