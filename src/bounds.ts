@@ -15,7 +15,16 @@ export default class Bounds {
     this.width = (typeof width !== 'undefined' ? width : max - min);
   }
 
-  equals(other: Bounds): boolean {
-    return this.min === other.min && this.max === other.max;
+  /**
+   * Compares two bounds
+   *
+   * @param other {Bounds}
+   */
+  public equals(other: Bounds): boolean {
+    return this.min === other.min && this.max === other.max && this.width === other.width;
+  }
+
+  public toString(): string {
+    return `Min: ${this.min} | Max: ${this.max} | Width: ${this.width}`;
   }
 }
