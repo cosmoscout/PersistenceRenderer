@@ -1,6 +1,6 @@
 import AbstractControl from './abstract-control';
 import Bounds from '../bounds';
-import {EventType} from '../event-dispatcher';
+import { EventType } from '../event-dispatcher';
 
 /**
  * Selection rect for selecting part of points on canvas
