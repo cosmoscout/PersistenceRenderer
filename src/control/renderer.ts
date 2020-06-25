@@ -2,7 +2,7 @@ import PersistencePointTuple from '../persistence-point-tuple';
 import AbstractControl from './abstract-control';
 import { EventType } from '../event-dispatcher';
 import { IPointData } from '../point-data-interface';
-import { IRenderer, pointDrawFunction } from './renderer-interface';
+import { IRenderer, PointDrawFunction } from './renderer-interface';
 
 /**
  * Point renderer
@@ -104,7 +104,7 @@ export default class Renderer extends AbstractControl implements IRenderer {
    * @param point {PersistencePointTuple}
    * @param renderer {IRenderer}
    */
-  public readonly defaultDrawFunction: pointDrawFunction = (point:PersistencePointTuple, renderer: IRenderer) => {
+  public readonly defaultDrawFunction: PointDrawFunction = (point:PersistencePointTuple, renderer: IRenderer) => {
     renderer.getContext().beginPath();
     renderer.getContext().moveTo(renderer.xPos(point.lower.x), renderer.yPos(point.lower.y));
     renderer.getContext().lineTo(renderer.xPos(point.upper.x), renderer.yPos(point.upper.y));
@@ -177,7 +177,7 @@ export default class Renderer extends AbstractControl implements IRenderer {
   /**
    * Returns either the default draw fn or a custom one from settings
    */
-  private getPointDrawFunction(): pointDrawFunction {
+  private getPointDrawFunction(): PointDrawFunction {
     if (typeof this.controlData.settings.pointDrawFunction !== 'undefined') {
       return this.controlData.settings.pointDrawFunction;
     }
@@ -226,7 +226,6 @@ export default class Renderer extends AbstractControl implements IRenderer {
     );
     this.getContext().stroke();
   }
-
 
   /**
    * Axis x-range start
