@@ -112,7 +112,6 @@ export default class AxesControl extends AbstractControl {
 
       const measure = this.context.measureText(stringX);
 
-
       const map = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) => {
         const distribution = (value - inMin) * (outMax - outMin);
         const range = (inMax - inMin);
