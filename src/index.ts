@@ -141,6 +141,10 @@ export default class PersistenceRenderer implements IPointData, IControlData {
    * Calls update on each instantiated control element
    */
   public update(): void {
+    if (typeof this._points === 'undefined') {
+      return;
+    }
+
     this.controlElements.forEach((element) => {
       element.update(this);
     });
