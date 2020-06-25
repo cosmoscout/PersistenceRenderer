@@ -5,7 +5,7 @@
  *
  * selectionstart: Mouse down on canvas
  * selectionupdating: Selection size is changing
- * selectionhidden: Use has clicked on selection rect -> Rect is invisible
+ * selectionupdating: Selection has been cleared
  * selectionend: Mouse up on canvas
  *
  * sliderdestroyed: Persistence bounds slider has been destroyed (happens upon loading a new vtk file)
@@ -21,7 +21,7 @@ export declare enum EventType {
     DataLoaded = "dataloaded",
     SelectionStart = "selectionstart",
     SelectionUpdating = "selectionupdating",
-    SelectionHidden = "selectionhidden",
+    SelectionCleared = "selectioncleared",
     SelectionEnd = "selectionend",
     SliderDestroyed = "sliderdestroyed",
     SliderCreated = "slidercreated",
