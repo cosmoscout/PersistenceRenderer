@@ -141,6 +141,10 @@ export default class PersistenceRenderer implements IPointData, IControlData {
    * Calls update on each instantiated control element
    */
   public update(): void {
+    if (typeof this._points === 'undefined') {
+      return;
+    }
+
     this.controlElements.forEach((element) => {
       element.update(this);
     });
@@ -227,7 +231,8 @@ export default class PersistenceRenderer implements IPointData, IControlData {
   }
 
   /**
-   * Set the active/selected persistence bounds
+   * Set the active/selected persistence bounds (slider)
+   * Call with 'undefined' to reset bounds
    * Calls update after setting
    * @param bounds {Bounds}
    */
@@ -253,7 +258,8 @@ export default class PersistenceRenderer implements IPointData, IControlData {
   }
 
   /**
-   * Set the active selection bounds
+   * Set the active selection bounds (subselection on canvas)
+   * Call with 'undefined' to reset bounds
    * Calls update after setting
    * @param bounds {Bounds}
    */

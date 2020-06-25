@@ -10,7 +10,7 @@
  *
  * @type {ISettings}
  */
-import { pointDrawFunction } from './control/renderer-interface';
+import { PointDrawFunction } from './control/renderer-interface';
 
 export type TickFormatter = {
   (tickValue: number, prevTickValue: number): string;
@@ -25,7 +25,7 @@ export interface ISettings {
 
   readonly chunks: number;
   readonly waitTime: number;
-  readonly pointDrawFunction?: pointDrawFunction | undefined;
+  readonly pointDrawFunction?: PointDrawFunction | undefined;
 
   readonly enableSelectionFilter: boolean;
   readonly enablePersistenceFilter: boolean;

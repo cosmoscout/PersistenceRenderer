@@ -1,6 +1,6 @@
 import AbstractControl from './abstract-control';
 import { IPointData } from '../point-data-interface';
-import { IRenderer, pointDrawFunction } from './renderer-interface';
+import { IRenderer, PointDrawFunction } from './renderer-interface';
 /**
  * Point renderer
  */
@@ -61,7 +61,7 @@ export default class Renderer extends AbstractControl implements IRenderer {
      * @param point {PersistencePointTuple}
      * @param renderer {IRenderer}
      */
-    readonly defaultDrawFunction: pointDrawFunction;
+    readonly defaultDrawFunction: PointDrawFunction;
     /**
      * Creates the canvas that contains the drawn points
      *

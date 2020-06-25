@@ -183,7 +183,7 @@ export default class SelectionControl extends AbstractControl {
     }
 
     this.pointData.setActiveSelectionBounds(this.selectionBounds);
-    this.events.dispatch(EventType.SelectionEnd);
+    this.events.dispatch(EventType.SelectionEnd, this.selectionBounds);
   }
 
   /**
@@ -193,6 +193,7 @@ export default class SelectionControl extends AbstractControl {
   private clearSelection(event: MouseEvent): void {
     event.preventDefault();
     this.pointData.setActiveSelectionBounds(undefined);
+    this.events.dispatch(EventType.SelectionCleared);
   }
 
   /**
