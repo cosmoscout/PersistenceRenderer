@@ -227,7 +227,8 @@ export default class PersistenceRenderer implements IPointData, IControlData {
   }
 
   /**
-   * Set the active/selected persistence bounds
+   * Set the active/selected persistence bounds (slider)
+   * Call with 'undefined' to reset bounds
    * Calls update after setting
    * @param bounds {Bounds}
    */
@@ -253,7 +254,8 @@ export default class PersistenceRenderer implements IPointData, IControlData {
   }
 
   /**
-   * Set the active selection bounds
+   * Set the active selection bounds (subselection on canvas)
+   * Call with 'undefined' to reset bounds
    * Calls update after setting
    * @param bounds {Bounds}
    */
