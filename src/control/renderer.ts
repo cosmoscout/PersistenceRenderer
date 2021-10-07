@@ -210,7 +210,8 @@ export default class Renderer extends AbstractControl implements IRenderer {
       throw new Error('Can\'t draw persistence line without points.');
     }
 
-    const filtered = this.pointData.filteredPoints();
+    const filtered = this.pointData.filteredPoints()
+      .sort((pointA, pointB) => pointA.lower.x - pointB.lower.x);
 
     const first = filtered[0];
     const last = filtered[filtered.length - 1];
