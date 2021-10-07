@@ -1,0 +1,19 @@
+name: Node CI
+
+on: [push]
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: npm install
+        run: |
+          npm install
+          npm run build
+      - name: Archive output
+        uses: actions/upload-artifact@v2
+        with:
+          name: PersistenceRenderer
+          path: dist/
