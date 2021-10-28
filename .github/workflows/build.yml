@@ -3,7 +3,7 @@ name: Node CI
 on: [push]
 
 jobs:
-  scrape:
+  BuildRenderer:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
