@@ -74,8 +74,8 @@ export default class VtkFileLoader implements ILoader {
           }
 
           this.rawPointData = rawData;
-          this.criticalTypeData = pointData.getArray(1).getData();
-          this.coordinateData = pointData.getArray(2).getData();
+          this.criticalTypeData = pointData.getArray("CriticalType").getData();
+          this.coordinateData = pointData.getArray("Coordinates").getData();
 
           const points = [];
 
