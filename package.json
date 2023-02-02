@@ -23,7 +23,7 @@
     "core-js": "^3.18.2",
     "nouislider": "^14.7.0",
     "regenerator-runtime": "^0.13.9",
-    "vtk.js": "^14.19.0"
+    "vtk.js": "^26.3.2"
   },
   "devDependencies": {
     "@babel/core": "7.10.3",
